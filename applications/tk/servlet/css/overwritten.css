@@ -36,3 +36,18 @@ table {
 <div id="tk-logo">
         <img src="/Oskari/applications/tk/servlet/images/tk_m_white_100x143.png" alt="TK" width="153" height="76">
     </div> 
+	
+	
+/* flyout toolbar */
+.oskari-flyoutheading {
+  background-color: #0073b0 !important; /*uusi väri*/
+  border-top: 1px solid #ffdf00;
+  border-bottom: 1px solid #ebb819;
+  height: 14px;
+  width: 100%; }
+.oskari-flyouttoolbar {
+  height: 57px;
+  width: 100%;
+  background-color: #cce3ef !important; /*uusi väri*/
+  border-top: #fdfdfd;
+  border-bottom: #fef2ba; }
