@@ -87,7 +87,28 @@ table {
   line-height: 17px; }
   
   
-  
+  div.mapplugins .mappluginsContainer .mappluginsContent div.featuredataplugin.mapplugin {
+  cursor: pointer;
+  clear: both;
+  display: block;
+  background: #0073b0 important! ; /*uusi väri*/
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -o-border-radius: 2px;
+  -ms-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding-box;
+  background-clip: padding-box;
+  line-height: 28px;
+  margin: 10px auto;
+  padding: 0 9px;
+  /* default and rounded-dark theme */
+  /* rounded-light theme */
+  /* sharp-dark theme */
+  /* sharp-light theme */
+  /* 3d-dark theme */
+  /* 3d-light theme */ }
   
   
   
