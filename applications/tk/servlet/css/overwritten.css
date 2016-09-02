@@ -12,6 +12,22 @@ table {
   background: #fafafa;
 }
 
+/* flyout toolbar*/
+
+.oskari-flyoutheading {
+  background-color: #0073b0 !important; /*uusi väri*/
+  border-top: 1px solid #ffdf00;
+  border-bottom: 1px solid #ebb819;
+  height: 14px;
+  width: 100%; }
+.oskari-flyouttoolbar {
+  height: 57px;
+  width: 100%;
+  background-color: #cce3ef !important; /*uusi väri*/
+  border-top: #fdfdfd;
+  border-bottom: #fef2ba; }
+
+
 /*Sivupalkin värityksen muuttaminen*/
 #maptools {
     background-color: #0073b0 !important;
@@ -38,19 +54,7 @@ table {
     </div> 
 	
 	
-/* flyout toolbar */
-.oskari-flyoutheading {
-  background-color: #0073b0 !important; /*uusi väri*/
-  border-top: 1px solid #ffdf00;
-  border-bottom: 1px solid #ebb819;
-  height: 14px;
-  width: 100%; }
-.oskari-flyouttoolbar {
-  height: 57px;
-  width: 100%;
-  background-color: #cce3ef !important; /*uusi väri*/
-  border-top: #fdfdfd;
-  border-bottom: #fef2ba; }
+
 
   
   /** tile */
