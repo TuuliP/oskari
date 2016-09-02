@@ -95,7 +95,7 @@ table {
   cursor: pointer;
   clear: both;
   display: block;
-  background: #0073b0 important! ; /*uusi väri*/
+  background: #0073b0 !important; /*uusi väri*/ 
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
   -o-border-radius: 2px;
