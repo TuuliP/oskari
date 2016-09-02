@@ -27,37 +27,7 @@ table {
   border-top: #fdfdfd;
   border-bottom: #fef2ba; }
 
-
-/*Sivupalkin v‰rityksen muuttaminen*/
-#maptools {
-    background-color: #0073b0 !important;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    width: 153px;  
-    z-index: 2;
-}
-
-/*Kuvan lis‰‰minen sivupalkkiin*/
-#tk-logo {
-				height:183px;
-				width:100px;
-				margin-left:15px;
-				margin-top:5px;
-				padding-bottom:5px;
-				background:url("/Oskari/applications/tk/servlet/images/tk_m_white_100x143.png") no-repeat;
-				cursor:pointer;
-			}  
-							
-<div id="tk-logo">
-        <img src="/Oskari/applications/tk/servlet/images/tk_m_white_100x143.png" alt="TK" width="153" height="76">
-    </div> 
-	
-	
-
-
-  
-  /** tile */
+/** tile */
 /* tile states */
   .oskari-tile-closed, .oskari-tile-minimized {
   border-top: 1px solid #484846;
@@ -114,5 +84,39 @@ table {
   /* 3d-dark theme */
   /* 3d-light theme */ }
   
+  
+    
+  
+  
+  
+
+/*Sivupalkin v‰rityksen muuttaminen*/
+#maptools {
+    background-color: #0073b0 !important;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    width: 153px;  
+    z-index: 2;
+}
+
+/*Kuvan lis‰‰minen sivupalkkiin*/
+#tk-logo {
+				height:183px;
+				width:100px;
+				margin-left:15px;
+				margin-top:5px;
+				padding-bottom:5px;
+				background:url("/Oskari/applications/tk/servlet/images/tk_m_white_100x143.png") no-repeat;
+				cursor:pointer;
+			}  
+							
+<div id="tk-logo">
+        <img src="/Oskari/applications/tk/servlet/images/tk_m_white_100x143.png" alt="TK" width="153" height="76">
+    </div> 
+	
+	
+
+
   
   
