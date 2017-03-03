@@ -6,6 +6,7 @@
 *
 */
 Oskari.util = (function () {
+    var log = Oskari.log('Oskari.util');
     var util = {};
 
     /**
@@ -23,7 +24,7 @@ Oskari.util = (function () {
             }
         }
         return false;
-    };
+    }
 
     /**
     * Checks at if value is number.
@@ -33,6 +34,9 @@ Oskari.util = (function () {
     * @param {Boolean} keepLeadingZero, need keep leading zero
     */
     util.isNumber = function(value, keepLeadingZero) {
+        if(value === null) {
+            return false;
+        }
         var reg = new RegExp('^[-+]?[0-9]+[.]?[0-9]*([eE][-+]?[0-9]+)?$'),
             isNumber = true,
             i;
@@ -342,13 +346,225 @@ Oskari.util = (function () {
         return isMobile;
     };
     /**
+     *
      * Sanitizes input and returns a string containing the sanitized content that can be injected to document and shown to user.
      * @param {String} content content to sanitize
      * @return String
      */
     util.sanitize = function(content) {
-        return DOMPurify.sanitize(content, {SAFE_FOR_JQUERY: true});
-    }
+        return DOMPurify.sanitize(content, {SAFE_FOR_JQUERY: true, ADD_ATTR: ['target']});
+    };
+
+    var validCoordinates = function(point) {
+        if(!point && typeof point !== 'object' && isNaN(point.length) && point.length !== 2)  {
+            return false;
+        } else {
+            return true;
+        }
+    };
+
+    var coordChars = {
+        CHAR_DEG: "\u00B0",
+        CHAR_MIN: "\u0027",
+        CHAR_SEC: "\u0022",
+        CHAR_SEP: "\u0020"
+    };
+
+    var coordinateDMSDecode = function(value) {
+        if(typeof value === 'number') {
+            value = '' + value;
+        }
+        value = value.replace(Oskari.getDecimalSeparator(), '.');
+        // also convert comma to dot
+        value = value.replace(',', '.');
+
+        var patterns = {
+            'DDMMSS.s':     '(-?\\d+)[' + coordChars.CHAR_DEG + 'd]\\s*' +          // DD
+                            '(\\d+)' + coordChars.CHAR_MIN + '\\s*' +               // MM
+                            '(\\d+(?:\\.\\d+)?)' + coordChars.CHAR_SEC,             // SS.s
+            'DDMM.mmm 1':   '(-?\\d+)[' + coordChars.CHAR_DEG + 'd]\\s*' +          // DD
+                            '(\\d+(?:\\.\\d+)?)[' + coordChars.CHAR_MIN + ']\\s*',  // MM.mmm
+            'DDMM.mmm 2':   '(-?\\d+)[' + coordChars.CHAR_DEG + 'd]\\s*' +          // DD
+                            '(\\d+(?:\\.\\d+)?)\\s*',                               // MM.mmm
+            'DD.ddddd':     '(\\d+(?:\\.\\d+)?)[' + coordChars.CHAR_DEG + 'd]\\s*' // DD.ddd
+        };
+
+        for(var key in patterns) {
+            if(patterns.hasOwnProperty(key) && value.match(new RegExp(patterns[key]))) {
+                log.debug('Coordinate match to pattern ' + key);
+                return value.match(new RegExp(patterns[key]));
+            }
+        }
+
+        log.debug('Coordinate not match to any patterns');
+        return null;
+    };
+
+    util.coordinateMetricToDegrees = function(point, decimals){
+        var roundToDecimals = decimals || 0;
+        if(roundToDecimals>20) {
+            roundToDecimals = 20;
+        }
+        if(validCoordinates(point))  {
+            // first coordinate
+            var dms1 = NaN;
+            if(!coordinateDMSDecode(point[0])) {
+                var p1 = parseFloat(point[0]);
+                var d1 = p1|0;
+                var m1 = ((p1 - d1) * 60)|0;
+                var s1 = (p1 - d1 - m1/60) * 3600;
+                s1 = parseFloat(s1).toFixed(roundToDecimals);
+                s1 = '' + s1;
+                s1 = s1.replace('.', Oskari.getDecimalSeparator());
+                dms1 = d1 + coordChars.CHAR_DEG + coordChars.CHAR_SEP + m1 + coordChars.CHAR_MIN + coordChars.CHAR_SEP + s1 + coordChars.CHAR_SEC;
+            } else {
+                dms1 = point[0];
+            }
+
+            // second coordinate
+            var dms2 = NaN;
+            if(!coordinateDMSDecode(point[1])) {
+                var p2 = parseFloat(point[1]);
+                var d2 = p2|0;
+                var m2 = ((p2 - d2) * 60)|0;
+                var s2 = (p2 - d2 - m2/60) * 3600;
+                s2 = parseFloat(s2).toFixed(roundToDecimals);
+                s2 = '' + s2;
+                s2 = s2.replace('.', Oskari.getDecimalSeparator());
+                dms2 = d2 + coordChars.CHAR_DEG + coordChars.CHAR_SEP + m2 + coordChars.CHAR_MIN + coordChars.CHAR_SEP + s2 + coordChars.CHAR_SEC;
+            } else {
+                dms2 = point[1];
+            }
+
+            return [dms1, dms2];
+        } else {
+            return [NaN, NaN];
+        }
+    };
+
+    util.coordinateDegreesToMetric = function(point, decimals){
+        var roundToDecimals = decimals || 0;
+        if(roundToDecimals>20) {
+            roundToDecimals = 20;
+        }
+        if(validCoordinates(point))  {
+            // first coordinate
+            var dd1 = NaN;
+            var matches1 = coordinateDMSDecode(point[0]);
+
+            if (matches1) {
+                var d1 = parseFloat(matches1[1]);
+                var m1 = parseFloat(matches1[2]);
+                var s1 = parseFloat(matches1[3]);
+
+                if (!(isNaN(d1) || isNaN(m1) || isNaN(s1))) {
+                    dd1 = parseFloat(d1 + (m1 / 60.0) + (s1 / 3600)).toFixed(roundToDecimals);
+                } else if (!(isNaN(d1) || isNaN(m1))) {
+                    dd1 = parseFloat(d1 + (m1 / 60.0)).toFixed(roundToDecimals);
+                } else if (!(isNaN(d1))) {
+                    dd1 = parseFloat(d1).toFixed(roundToDecimals);
+                }
+            }
+
+            // second coordinate
+            var dd2 = NaN;
+            var matches2 = coordinateDMSDecode(point[1]);
+
+            if (matches2) {
+                var d2 = parseFloat(matches2[1]);
+                var m2 = parseFloat(matches2[2]);
+                var s2 = parseFloat(matches2[3]);
+
+                if (!(isNaN(d2) || isNaN(m2) || isNaN(s2))) {
+                    dd2 = parseFloat(d2 + (m2 / 60.0) + (s2 / 3600)).toFixed(roundToDecimals);
+                } else if (!(isNaN(d2) || isNaN(m2))) {
+                    dd2 = parseFloat(d2 + (m2 / 60.0)).toFixed(roundToDecimals);
+                } else if (!(isNaN(d2))) {
+                    dd2 = parseFloat(d2).toFixed(roundToDecimals);
+                }
+            }
+
+            return [dd1,dd2];
+        } else {
+            return [NaN, NaN];
+        }
+    };
+
+    util.coordinateIsDegrees = function(point){
+        var matches1 = coordinateDMSDecode(point[0]);
+        var matches2 = coordinateDMSDecode(point[1]);
+        return (matches1 && matches2);
+    };
+
+    /**
+     * @method getRequestParam
+     * Returns a request parameter from query string
+     * http://javablog.info/2008/04/17/url-request-parameters-using-javascript/
+     * @param {String} name - parameter name
+     * @param {String} defaultValue - default value if param is not set
+     * @return {String} value for the parameter or null if not found
+     */
+    util.getRequestParam = function (name, defaultValue) {
+      var query = location.search.substr(1);
+      var result = {};
+      query.split("&").forEach(function(part) {
+        var item = part.split("=");
+        result[item[0]] = decodeURIComponent(item[1]);
+      });
+      return result[name] || defaultValue;
+    };
+    /**
+     * Returns true if first param is a number with value between start-stop parameters
+     * @param  {Number}  num   [description]
+     * @param  {Number}  start [description]
+     * @param  {Number}  stop  [description]
+     * @return {Boolean}       [description]
+     */
+    util.isNumberBetween = function(num, start, stop) {
+        if(typeof num !== 'number') {
+            return false;
+        }
+        return num >= start && num <= stop;
+    };
+
+    /**
+     * Moves item in array using from and to parameters as indexes.
+     * Returns boolean indicating if something was changed.
+     * @param  {Object[]} array array to re-order
+     * @param  {Number}   from  index for item to move
+     * @param  {Number}   to    index to move the item to
+     * @return {Boolean}  true if order was changed
+     */
+    util.arrayMove = function(array, from, to) {
+        // normalize
+        if(!array || !array.length || !array.splice) {
+            return false;
+        }
+        if(!util.isNumberBetween(from, 0, array.length -1)) {
+            from = array.length - 1;
+        }
+        if(!util.isNumberBetween(to, 0, array.length -1)) {
+            to = array.length - 1;
+        }
+        if(from === to) {
+            return false;
+        }
+        // From http://jsperf.com/arraymove-many-sizes
+        if (Math.abs(from - to) > 60) {
+            array.splice(to, 0, array.splice(from, 1)[0]);
+        } else {
+            // works better when we are not moving things very far
+            var target = array[from];
+            var inc = (to - from) / Math.abs(to - from);
+            var current = from;
+            for (; current != to; current += inc) {
+                array[current] = array[current + inc];
+            }
+            array[to] = target;
+        }
+        return true;
+    };
+
 
     return util;
 }());

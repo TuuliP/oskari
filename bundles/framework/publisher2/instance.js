@@ -102,11 +102,11 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
             var reqHandler = Oskari.clazz.create(
                     'Oskari.mapframework.bundle.publisher.request.PublishMapEditorRequestHandler',
                     this);
-            sandbox.addRequestHandler('Publisher.PublishMapEditorRequest', reqHandler);
+            sandbox.requestHandler('Publisher.PublishMapEditorRequest', reqHandler);
 
             // Let's add publishable filter to layerlist if user is logged in
-            if(sandbox.getUser().isLoggedIn()) {
-                request = sandbox.getRequestBuilder('AddLayerListFilterRequest')(
+            if(Oskari.user().isLoggedIn()) {
+                request = Oskari.requestBuilder('AddLayerListFilterRequest')(
                     loc.layerFilter.buttons.publishable,
                     loc.layerFilter.tooltips.publishable,
                     function(layer){
@@ -140,8 +140,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
         setPublishMode: function (blnEnabled, deniedLayers, data) {
             var me = this,
                 map = jQuery('#contentMap');
+            // trigger an event letting other bundles know we require the whole UI
+            var eventBuilder = Oskari.eventBuilder('UIChangeEvent');
+            this.sandbox.notifyAll(eventBuilder(this.mediator.bundleId));
 
-            var statsLayer = this._resetStatsUI();
             if (blnEnabled) {
                 me.getService().setNonPublisherLayers(deniedLayers);
                 me.getService().removeLayers();
@@ -165,17 +167,12 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
                 //call set enabled before rendering the panels (avoid duplicate "normal map plugins")
                 me.publisher.setEnabled(true);
                 me.publisher.render(map);
-
-
-                //calling this results in calling each of the panels' init-method twice, because init is already called when the forms are created at publisherSideBar's render.
-                //and that causes trouble.
-//                me.publisher.initPanels();
             } else {
-                me._destroyGrid();
                 Oskari.setLang(me.oskariLang);
 
                 //change the mapmodule toolstyle back to normal
                 var mapModule = me.sandbox.findRegisteredModuleInstance("MainMapModule");
+                // TODO: reset to what it was when publisher was started instead of removing it (mapmodule.getToolStyle())
                 mapModule.changeToolStyle(null);
 
                 if (me.publisher) {
@@ -200,32 +197,6 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
                 me.getService().addLayers();
                 me.getFlyout().close();
             }
-        },
-        /**
-         * Resets Thematic maps UI and returns the stats layer if found
-         * @return {Oskari.mapframework.bundle.mapstats.domain.StatsLayer} stats layer if one was in selected layers
-         */
-        _resetStatsUI : function() {
-            var me = this;
-            var sandbox = me.sandbox;
-            // check if statsgrid mode is on -> disable statsgrid mode
-            var statsLayers = _.filter(sandbox.findAllSelectedMapLayers(), function(layer) {
-                return layer.isLayerOfType('stats');
-            });
-
-            if(!statsLayers.length) {
-                // no statslayers
-                return;
-            }
-            // assume only one which is true for now.
-            var layer = statsLayers[0];
-
-            // TODO: replace with "ResetUIRequest" or similar (handled by divmanazer)
-            // or "ModeActivationEvent" which StatsGrid and others will listen and clear the UI.
-            var request = sandbox.getRequestBuilder('StatsGrid.StatsGridRequest')(false, layer);
-            sandbox.request(me.getName(), request);
-
-            return layer;
         },
         /**
          * @method hasPublishRight
@@ -263,27 +234,6 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.PublisherBundleInstan
                 }
             }
             return deniedLayers;
-        },
-
-        /**
-         * @method _destroyGrid
-         * Destroys Grid
-         * @private
-         */
-        _destroyGrid: function () {
-            jQuery('#contentMap').width('');
-            jQuery('.oskariui-left')
-                .css({
-                    'width': '',
-                    'height': '',
-                    'float': ''
-                })
-                .removeClass('published-grid-left')
-                .empty();
-            jQuery('.oskariui-center').css({
-                'width': '100%',
-                'float': ''
-            }).removeClass('published-grid-center');
         }
     }, {
         "extend" : ["Oskari.userinterface.extension.DefaultExtension"]

@@ -43,17 +43,21 @@ Oskari.registerLocalization(
                 "tooltip": "Mapová vrstva je momentálne nedostupná",
                 "iconClass": "backendstatus-dolu"
             },
+            "ERROR": {
+                "tooltip": "Mapová vrstva je momentálne nedostupná",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "V nasledujúcich dňoch môže byť mapová vrstva pravidelne nedostupná",
                 "iconClass": "backendstatus-údržba"
             },
             "UNKNOWN": {
                 "tooltip": "",
-                "iconClass": "backendstatus-unknown"
+                "iconClass": "backendstatus-neznámy"
             },
             "UNSTABLE": {
                 "tooltip": "",
-                "iconClass": "backendstatus-unstable"
+                "iconClass": "backendstatus-nestabilný"
             }
         },
         "buttons": {
@@ -78,5 +82,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

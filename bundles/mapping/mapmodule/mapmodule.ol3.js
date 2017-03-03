@@ -35,7 +35,7 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
         /**
          * @method _initImpl
          * Implements Module protocol init method. Creates the OpenLayers Map.
-         * @param {Oskari.mapframework.sandbox.Sandbox} sandbox
+         * @param {Oskari.Sandbox} sandbox
          * @return {OpenLayers.Map}
          */
         _initImpl: function (sandbox, options, map) {
@@ -65,7 +65,9 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
                 keyboardEventTarget: document,
                 target: this.getMapElementId(),
                 controls: controls,
-                interactions: interactions
+                interactions: interactions,
+                loadTilesWhileInteracting: true,
+                loadTilesWhileAnimating: true
             });
 
             var projection = ol.proj.get(me.getProjection());
@@ -94,17 +96,7 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
             var sandbox = me._sandbox;
 
             map.on('moveend', function(evt) {
-                var map = evt.map;
-                var extent = map.getView().calculateExtent(map.getSize());
-                var center = map.getView().getCenter();
-
-                sandbox.getMap().setMoving(false);
-                sandbox.printDebug("sending AFTERMAPMOVE EVENT from map Event handler");
-
-                var lonlat = map.getView().getCenter();
-                me.updateDomain();
-                var sboxevt = sandbox.getEventBuilder('AfterMapMoveEvent')(lonlat[0], lonlat[1], map.getView().getZoom(), false, me.getMapScale());
-                sandbox.notifyAll(sboxevt);
+                me.notifyMoveEnd();
             });
 
             map.on('singleclick', function (evt) {
@@ -152,7 +144,7 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
          */
         __boundsToArray : function(bounds) {
             var extent = bounds || [];
-            if(bounds.left && bounds.top && bounds.right && bounds.bottom) {
+            if(!isNaN(bounds.left) && !isNaN(bounds.top) && !isNaN(bounds.right) && !isNaN(bounds.bottom)) {
               extent = [
                     bounds.left,
                     bounds.bottom,
@@ -278,6 +270,26 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
         },
 
         /**
+         * @method  @public getProjectionUnits Get projection units. If projection is not defined then using map projection.
+         * @param {String} srs projection srs, if not defined used map srs
+         * @return {String} projection units. 'degrees' or 'm'
+         */
+        getProjectionUnits: function(srs){
+            var me = this;
+            var units = null;
+            srs = srs || me.getProjection();
+
+            try {
+                var proj = ol.proj.get(srs);
+                units = proj.getUnits(); // return 'degrees' or 'm'
+            } catch(err){
+                var log = Oskari.log('Oskari.mapframework.ui.module.common.MapModule');
+                log.warn('Cannot get map units for "' + srs + '"-projection!');
+            }
+            return units;
+        },
+
+        /**
          * @method panMapByPixels
          * Pans the map by given amount of pixels.
          * @param {Number} pX amount of pixels to pan on x axis
@@ -323,7 +335,6 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
          * @return {Object} transformed coordinates as object with lon and lat keys
          */
         transformCoordinates: function (pLonlat, srs, targetSRS) {
-
             if(!targetSRS) {
                 targetSRS = this.getProjection();
             }
@@ -341,6 +352,9 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
                       lat : transformed[1]
                   };
             }
+
+            var log = Oskari.log('Oskari.mapframework.ui.module.common.MapModule');
+            log.warn('SrsName not supported!');
             throw new Error('SrsName not supported!');
         },
         /**
@@ -493,7 +507,7 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
             /* insert at */
 
             if (index === layerIndex) {
-                return
+                return;
             } else if (index === layerColl.getLength()) {
                 /* to top */
                 layerColl.removeAt(layerIndex);
@@ -680,9 +694,70 @@ Oskari.clazz.define('Oskari.mapframework.ui.module.common.MapModule',
                 text.stroke = this.__getStrokeStyle(textStyleJSON);
             }
             if (textStyleJSON.labelText) {
-                text.text = textStyleJSON.labelText;
+                if(typeof textStyleJSON.labelText === 'number'){
+                    text.text = textStyleJSON.labelText.toString();
+                } else {
+                    text.text = textStyleJSON.labelText;
+                }
             }
             return new ol.style.Text(text);
+        },
+        /**
+         * Create a feature from a wkt and calculate a new map viewport to be able to view entire geometry and center to it
+         * @param {String} wkt Well known text representation of the geometry
+         */
+        getViewPortForGeometry: function(wkt) {
+            if (!wkt) {
+                return null;
+            }
+            var me = this,
+                feature = me.getFeatureFromWKT(wkt),
+                centroid,
+                bounds,
+                mapBounds,
+                zoomToBounds = null;
+
+            if (!feature) {
+                return;
+            }
+
+            if (feature && feature.getGeometry() && feature.getGeometry().getExtent()) {
+                var map = me.getMap();
+                bounds = feature.getGeometry().getExtent();
+                centroid = ol.extent.getCenter(bounds);
+                mapBounds = map.getView().calculateExtent(map.getSize());
+
+                //if both width and height are < mapbounds', no need to change the bounds. Otherwise use the feature's geometry's bounds.
+                if (ol.extent.getHeight(bounds) < ol.extent.getHeight(mapBounds) && ol.extent.getWidth(bounds) < ol.extent.getWidth(mapBounds)) {
+                    zoomToBounds = null;
+                } else {
+                    zoomToBounds = {
+                        'top': ol.extent.getTopLeft(bounds)[1],
+                        'left': ol.extent.getTopLeft(bounds)[0],
+                        'bottom': ol.extent.getBottomRight(bounds)[1],
+                        'right': ol.extent.getBottomRight(bounds)[0]
+                    };
+                }
+
+                var ret = {
+                    'x': centroid[0],
+                    'y': centroid[1],
+                    'bounds': zoomToBounds
+                };
+
+                return ret;
+            }
+
+            return null;
+        },
+        /**
+         * @method getFeatureFromWKT
+         */
+        getFeatureFromWKT: function(wkt) {
+            var wktFormat = new ol.format.WKT(),
+                feature = wktFormat.readFeature(wkt);
+
+            return feature;
         }
 /* --------- /Impl specific - PARAM DIFFERENCES  ----------------> */
     }, {

@@ -7,6 +7,7 @@ Oskari.registerLocalization(
         "desc": "",
         "default-style": "Default style",
         "own-style": "Own style",
+        "none-style": "None",
         "refresh": "Refresh",
         "refresh_title": "Refresh data products not rendering automatically on the map.",
         "tile": {
@@ -32,7 +33,7 @@ Oskari.registerLocalization(
         "refresh_alert": {
             "title": "Visibility warning",
             "all_not_in_scale": "There are no layers to refresh, please move to a suitable zoom level and try again",
-            "all_invisible" : "There are no visible layers to refresh, please open selected layers and set visible some of current layers"
+            "all_invisible": "There are no visible layers to refresh, please open selected layers and set visible some of current layers"
         },
         "button": {
             "cancel": "Cancel",
@@ -48,5 +49,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

@@ -10,19 +10,19 @@ Oskari.registerLocalization(
             "generic": "Sistēmas kļūda| Lūdzu mēģiniet vēlāk vēlreiz",
             "loadFailed": "Kļūda ielādējot kartes slāņus| Ielādējiet atkārtoti lapu savā pārlūkā un izvēlieties kartes slāni",
             "noResults": "Nekas netika atrasts",
-            "noResultsForKeyword": "NOT TRANSLATED",
-            "minChars": "NOT TRANSLATED"
+            "noResultsForKeyword": "",
+            "minChars": ""
         },
         "loading": "Notiek ielāde…",
         "filter": {
             "text": "Meklēt kartes slāņus",
-            "keywordsTitle": "NOT TRANSLATED",
-            "shortDescription": "NOT TRANSLATED",
-            "description": "NOT TRANSLATED",
+            "keywordsTitle": "",
+            "shortDescription": "",
+            "description": "",
             "inspire": "Pēc tēmas",
             "organization": "Pēc datu sniedzēja",
             "published": "Lietotāji",
-            "didYouMean": "NOT TRANSLATED"
+            "didYouMean": ""
         },
         "published": {
             "organization": "Publicētais kartes slānis",
@@ -42,6 +42,10 @@ Oskari.registerLocalization(
                 "tooltip": "Kartes slānis šobrīd nav pieejams",
                 "iconClass": "backendstatus-down"
             },
+            "ERROR": {
+                "tooltip": "Kartes slānis šobrīd nav pieejams",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "Kartes slānis var nebūt periodiski pieejams dažu tuvāko dienu laikā",
                 "iconClass": "backendstatus-maintenance"
@@ -56,14 +60,14 @@ Oskari.registerLocalization(
             }
         },
         "buttons": {
-            "ok": "NOT TRANSLATED"
+            "ok": ""
         },
         "types": {
-            "syn": "NOT TRANSLATED",
-            "lk": "NOT TRANSLATED",
-            "vk": "NOT TRANSLATED",
-            "ak": "NOT TRANSLATED",
-            "yk": "NOT TRANSLATED"
+            "syn": "",
+            "lk": "",
+            "vk": "",
+            "ak": "",
+            "yk": ""
         },
         "layerFilter": {
             "buttons": {
@@ -77,5 +81,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

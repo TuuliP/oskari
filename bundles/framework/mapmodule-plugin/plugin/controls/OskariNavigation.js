@@ -19,7 +19,7 @@ OskariNavigation = OpenLayers.Class(OpenLayers.Control.Navigation, {
     setup : function(mapmodule) {
         this.mapmodule = mapmodule;
         this.sandbox = this.mapmodule.getSandbox();
-        this._hoverEventBuilder = this.sandbox.getEventBuilder('MouseHoverEvent');
+        this._hoverEventBuilder = Oskari.eventBuilder('MouseHoverEvent');
         this._hoverEvent = this._hoverEventBuilder();
     },
 
@@ -53,9 +53,9 @@ OskariNavigation = OpenLayers.Class(OpenLayers.Control.Navigation, {
                 me.mapmodule.__sendMapClickEvent(evt);
                 return true;
             }
-            
+
         };
-            
+
         // </custom hooking>
         var clickOptions = {
             'double': true,

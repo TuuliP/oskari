@@ -96,13 +96,14 @@ Oskari.clazz.define(
 
         me._wellknownStyles = {};
 
-        me._isInMobileMode;
-        me._mobileToolbar;
+        me._isInMobileMode = null;
+        me._mobileToolbar = null;
         me._mobileToolbarId = 'mobileToolbar';
-        me._toolbarContent;
+        me._toolbarContent = null;
 
         //possible custom css cursor set via rpc
         this._cursorStyle = '';
+        this.log = Oskari.log('AbstractMapModule');
 
 
         this.templates = {
@@ -111,21 +112,66 @@ Oskari.clazz.define(
                     '<div class="oskari-crosshair-vertical-bar"></div>'+
                     '<div class="oskari-crosshair-horizontal-bar"></div>'+
                 '</div>')
-        }
+        };
     }, {
+        /**
+         * Moved from core, to be removed
+         */
+        handleMapLinkParams: function(stateService) {
+            this.log.debug('Checking if map is started with link...');
+            var coord = Oskari.util.getRequestParam('coord', null);
+            var zoomLevel = Oskari.util.getRequestParam('zoomLevel', null);
+
+            if (coord === null || zoomLevel === null) {
+                // not a link
+                return;
+            }
+
+            var splittedCoord;
+
+            // Coordinates can be separated either with new "_" or old "%20"
+            if (coord.indexOf('_') >= 0) {
+                splittedCoord = coord.split('_');
+            } else if (coord.indexOf('%20') >= 0) {
+                splittedCoord = coord.split('%20');
+            } else {
+                // coordinate format not recognized
+                return;
+            }
+
+            var longitude = splittedCoord[0],
+                latitude = splittedCoord[1];
+            if (longitude === null || latitude === null) {
+                this.log.debug('Could not parse link location. Skipping.');
+                return;
+            }
+            this.log.debug('This is startup by link, moving map...');
+            stateService.moveTo(longitude, latitude, zoomLevel);
+        },
         /**
          * @method init
          * Implements Module protocol init method. Creates the Map.
-         * @param {Oskari.mapframework.sandbox.Sandbox} sandbox
+         * @param {Oskari.Sandbox} sandbox
          * @return {Map}
          */
         init: function (sandbox) {
             var me = this;
-            sandbox.printDebug(
+            this.log.debug(
                 'Initializing oskari map module...#############################################'
             );
 
             me._sandbox = sandbox;
+
+            var mapLayerService = sandbox.getService('Oskari.mapframework.service.MapLayerService');
+            if(!mapLayerService) {
+                // create maplayer service to sandbox if it doesn't exist yet
+                mapLayerService = Oskari.clazz.create('Oskari.mapframework.service.MapLayerService', sandbox);
+                sandbox.registerService(mapLayerService);
+            }
+
+            var stateService = Oskari.clazz.create('Oskari.mapframework.domain.Map', sandbox);
+            sandbox.registerService(stateService);
+            this.handleMapLinkParams(stateService);
 
             if (me._options) {
                 if (me._options.resolutions) {
@@ -161,7 +207,7 @@ Oskari.clazz.define(
          * Starts the plugins registered on the map and adds
          * selected layers on the map if layers were selected before
          * mapmodule was registered to listen to these events.
-         * @param {Oskari.mapframework.sandbox.Sandbox} sandbox
+         * @param {Oskari.Sandbox} sandbox
          */
         start: function (sandbox) {
             var me = this;
@@ -169,7 +215,7 @@ Oskari.clazz.define(
                 return;
             }
 
-            sandbox.printDebug('Starting ' + this.getName());
+            this.log.debug('Starting ' + this.getName());
 
             // listen to application started event and trigger a forced update on any remaining lazy plugins
             Oskari.on('app.start', function(details) {
@@ -185,6 +231,7 @@ Oskari.clazz.define(
                     sandbox.registerForEventByName(this, p);
                 }
             }
+            var layerService = sandbox.getService('Oskari.mapframework.service.MapLayerService');
 
             //register request handlers
             this.requestHandlers = {
@@ -192,14 +239,21 @@ Oskari.clazz.define(
                 mapMoveRequestHandler: Oskari.clazz.create('Oskari.mapframework.bundle.mapmodule.request.MapMoveRequestHandler', sandbox, this),
                 showSpinnerRequestHandler: Oskari.clazz.create('Oskari.mapframework.bundle.mapmodule.request.ShowProgressSpinnerRequestHandler', sandbox, this),
                 userLocationRequestHandler: Oskari.clazz.create('Oskari.mapframework.bundle.mapmodule.request.GetUserLocationRequestHandler', sandbox, this),
-                registerStyleRequestHandler: Oskari.clazz.create('Oskari.mapframework.bundle.mapmodule.request.RegisterStyleRequestHandler', sandbox, this)
+                registerStyleRequestHandler: Oskari.clazz.create('Oskari.mapframework.bundle.mapmodule.request.RegisterStyleRequestHandler', sandbox, this),
+                mapLayerHandler: Oskari.clazz.create('map.layer.handler', sandbox.getMap(), layerService)
             };
 
-            sandbox.addRequestHandler('MapModulePlugin.MapLayerUpdateRequest', this.requestHandlers.mapLayerUpdateHandler);
-            sandbox.addRequestHandler('MapMoveRequest', this.requestHandlers.mapMoveRequestHandler);
-            sandbox.addRequestHandler('ShowProgressSpinnerRequest', this.requestHandlers.showSpinnerRequestHandler);
-            sandbox.addRequestHandler('MyLocationPlugin.GetUserLocationRequest', this.requestHandlers.userLocationRequestHandler);
-            sandbox.addRequestHandler('MapModulePlugin.RegisterStyleRequest', this.requestHandlers.registerStyleRequestHandler);
+            sandbox.requestHandler('MapModulePlugin.MapLayerUpdateRequest', this.requestHandlers.mapLayerUpdateHandler);
+            sandbox.requestHandler('MapMoveRequest', this.requestHandlers.mapMoveRequestHandler);
+            sandbox.requestHandler('ShowProgressSpinnerRequest', this.requestHandlers.showSpinnerRequestHandler);
+            sandbox.requestHandler('MyLocationPlugin.GetUserLocationRequest', this.requestHandlers.userLocationRequestHandler);
+            sandbox.requestHandler('MapModulePlugin.RegisterStyleRequest', this.requestHandlers.registerStyleRequestHandler);
+            sandbox.requestHandler('activate.map.layer', this.requestHandlers.mapLayerHandler);
+            sandbox.requestHandler('AddMapLayerRequest', this.requestHandlers.mapLayerHandler);
+            sandbox.requestHandler('RemoveMapLayerRequest', this.requestHandlers.mapLayerHandler);
+            sandbox.requestHandler('RearrangeSelectedMapLayerRequest', this.requestHandlers.mapLayerHandler);
+            sandbox.requestHandler('ChangeMapLayerOpacityRequest', this.requestHandlers.mapLayerHandler);
+            sandbox.requestHandler('ChangeMapLayerStyleRequest', this.requestHandlers.mapLayerHandler);
 
             this.started = this._startImpl();
             var size = this.getSize();
@@ -208,12 +262,11 @@ Oskari.clazz.define(
             me._adjustMobileMapSize();
             this.updateCurrentState();
         },
-
         /**
          * @method stop
          * implements BundleInstance protocol stop method
          * Stops the plugins registered on the map.
-         * @param {Oskari.mapframework.sandbox.Sandbox} sandbox
+         * @param {Oskari.Sandbox} sandbox
          */
         stop: function (sandbox) {
 
@@ -266,6 +319,8 @@ Oskari.clazz.define(
         getMapZoom: Oskari.AbstractFunc('getMapZoom'),
         getSize: Oskari.AbstractFunc('getSize'),
         getCurrentExtent: Oskari.AbstractFunc('getCurrentExtent'),
+        getProjectionUnits: Oskari.AbstractFunc('getProjectionUnits'),
+
         /**
          * @method centerMap
          * Moves the map to the given position and zoomlevel.
@@ -311,7 +366,7 @@ Oskari.clazz.define(
         /**
          * @method _initImpl
          * Init for implementation specific functionality.
-         * @param {Oskari.mapframework.sandbox.Sandbox} sandbox
+         * @param {Oskari.Sandbox} sandbox
          * @param {Map} map
          * @return {Map}
          */
@@ -344,6 +399,24 @@ Oskari.clazz.define(
 
 
 /* ---------------- SHARED FUNCTIONS --------------- */
+
+        /**
+         * getProjectionDecimals get projection decimals
+         *
+         * @param {String} srs projection srs, if not defined used map srs
+         *
+         * @return {Integer} projetion decimals (decimal count spefied by units)
+         */
+        getProjectionDecimals: function(srs){
+            var me = this;
+            var units = me.getProjectionUnits(srs);
+            if(units === 'm') {
+                return 0;
+            } else if(units === 'degrees') {
+                return 6;
+            }
+            return 6;
+        },
         /**
          * Returns the id where map is rendered.
          * @return {String} DOMElement id like 'mapdiv'
@@ -359,7 +432,7 @@ Oskari.clazz.define(
         getMapEl: function () {
             var mapDiv = jQuery('#' + this.getMapElementId());
             if (!mapDiv.length) {
-                this.getSandbox().printWarn('mapDiv not found with #' + this._mapDivId);
+                this.log.warn('mapDiv not found with #' + this._mapDivId);
             }
             return mapDiv;
         },
@@ -468,12 +541,12 @@ Oskari.clazz.define(
         getUserLocation : function(callback, options) {
             var me = this;
             var sandbox = me.getSandbox();
-            var evtBuilder =  sandbox.getEventBuilder('UserLocationEvent');
+            var evtBuilder = Oskari.eventBuilder('UserLocationEvent');
             // normalize opts with defaults
             var opts = options || {};
             if(!opts.hasOwnProperty('maximumAge')) {
-                // accept an hour long cached position
-                opts.maximumAge = 3600000;
+                // don't accept cached position
+                opts.maximumAge = 0;
             }
             if(!opts.hasOwnProperty('timeout')) {
                 // timeout after 6 seconds
@@ -496,7 +569,7 @@ Oskari.clazz.define(
                     function (errors) {
                         // if users just ignores/closes the browser dialog
                         // -> error handler won't be called in most browsers
-                        sandbox.printWarn('Error getting user location', errors);
+                        me.log.warn('Error getting user location', errors);
                         // notify callback and event without lonlat to signal failure
                         sandbox.notifyAll(evtBuilder());
                         if(typeof callback === 'function') {
@@ -566,33 +639,31 @@ Oskari.clazz.define(
          * If map is zoomed too close -> returns the closest zoom level level possible within given bounds
          * If map is zoomed too far out -> returns the furthest zoom level possible within given bounds
          * If the boundaries are within current zoomlevel or undefined, returns the current zoomLevel
-         * @param {Number} maxScale maximum scale boundary (optional)
          * @param {Number} minScale minimum scale boundary (optional)
+         * @param {Number} maxScale maximum scale boundary (optional)
          * @return {Number} zoomLevel (0-12)
          */
-        getClosestZoomLevel: function (maxScale, minScale) {
+        getClosestZoomLevel: function (minScale, maxScale) {
             var zoomLevel = this.getMapZoom();
-            // FIXME: shouldn't we check appropriate level if even one is defined? '||' should be '&&'?
-            if (!minScale || !maxScale) {
-                return zoomLevel;
-            }
-
             var scale = this.getMapScale(),
                 scaleList = this.getScaleArray(),
                 i;
+            // default to values from scaleList if missing
+            minScale = minScale || scaleList[0];
+            maxScale = maxScale || scaleList[scaleList.length -1];
 
-            if (scale < minScale) {
+            if (scale < maxScale) {
                 // zoom out
                 //for(i = this._mapScales.length; i > zoomLevel; i--) {
                 for (i = zoomLevel; i > 0; i -= 1) {
-                    if (scaleList[i] >= minScale) {
+                    if (scaleList[i] >= maxScale) {
                         return i;
                     }
                 }
-            } else if (scale > maxScale) {
+            } else if (scale > minScale) {
                 // zoom in
                 for (i = zoomLevel; i < scaleList.length; i += 1) {
-                    if (scaleList[i] <= maxScale) {
+                    if (scaleList[i] <= minScale) {
                         return i;
                     }
                 }
@@ -737,7 +808,6 @@ Oskari.clazz.define(
             mapVO.setWidth(size.width);
             mapVO.setHeight(size.height);
 
-            mapVO.setExtent(this.getCurrentExtent());
             mapVO.setBbox(this.getCurrentExtent());
             mapVO.setMaxExtent(this.getMaxExtent());
         },
@@ -758,7 +828,7 @@ Oskari.clazz.define(
                 heightNew = mapVO.getHeight();
             // send as an event forward
             if(width !== widthNew || height !== heightNew) {
-              var evt = sandbox.getEventBuilder('MapSizeChangedEvent')(widthNew, heightNew);
+              var evt = Oskari.eventBuilder('MapSizeChangedEvent')(widthNew, heightNew);
               sandbox.notifyAll(evt);
             }
         },
@@ -787,7 +857,7 @@ Oskari.clazz.define(
                     if(typeof layersPlugin.preselectLayers !== 'function') {
                         continue;
                     }
-                    sandbox.printDebug('preselecting ' + p);
+                    this.log.debug('preselecting ' + p);
                     layersPlugin.preselectLayers(layers);
                 }
             }
@@ -850,7 +920,7 @@ Oskari.clazz.define(
             this.getSandbox().getMap().setMoving(true);
             var centerX = this.getMapCenter().lon,
                 centerY = this.getMapCenter().lat,
-                evt = this.getSandbox().getEventBuilder('MapMoveStartEvent')(centerX, centerY);
+                evt = Oskari.eventBuilder('MapMoveStartEvent')(centerX, centerY);
             this.getSandbox().notifyAll(evt);
         },
         /**
@@ -868,7 +938,7 @@ Oskari.clazz.define(
 
             var lonlat = this.getMapCenter();
             this.updateDomain();
-            var evt = sandbox.getEventBuilder('AfterMapMoveEvent')(lonlat.lon, lonlat.lat, this.getMapZoom(), false, this.getMapScale(), creator);
+            var evt = Oskari.eventBuilder('AfterMapMoveEvent')(lonlat.lon, lonlat.lat, this.getMapZoom(), this.getMapScale(), creator);
             sandbox.notifyAll(evt);
         },
 /* --------------- /MAP STATE ------------------------ */
@@ -898,30 +968,30 @@ Oskari.clazz.define(
         _createMobileToolbar: function () {
             var me = this,
                 request,
-                sandbox = me.getSandbox(),
-                builder = sandbox.getRequestBuilder('Toolbar.ToolbarRequest');
+                sandbox = me.getSandbox();
 
-            if (me._mobileToolbarId && builder) {
-                me._mobileToolbar = true;
-                me.getMobileDiv().append('<div class="mobileToolbarContent"></div>');
-                me._toolbarContent = me.getMobileDiv().find('.mobileToolbarContent');
-                // add toolbar when toolbarId and target container is configured
-                // We assume the first container is intended for the toolbar
-                request = builder(
-                        me._mobileToolbarId,
-                        'add',
-                        {
-                            show: true,
-                            toolbarContainer: me._toolbarContent,
-                            colours: {
-                                hover: this.getThemeColours().hoverColour,
-                                background: this.getThemeColours().backgroundColour
-                            },
-                            disableHover: true
-                        }
-                );
-                sandbox.request(me.getName(), request);
+            if (!me._mobileToolbarId || !sandbox.hasHandler('Toolbar.ToolbarRequest')) {
+                return;
             }
+            me._mobileToolbar = true;
+            me.getMobileDiv().append('<div class="mobileToolbarContent"></div>');
+            me._toolbarContent = me.getMobileDiv().find('.mobileToolbarContent');
+            // add toolbar when toolbarId and target container is configured
+            // We assume the first container is intended for the toolbar
+            request = Oskari.requestBuilder('Toolbar.ToolbarRequest')(
+                    me._mobileToolbarId,
+                    'add',
+                    {
+                        show: true,
+                        toolbarContainer: me._toolbarContent,
+                        colours: {
+                            hover: this.getThemeColours().hoverColour,
+                            background: this.getThemeColours().backgroundColour
+                        },
+                        disableHover: true
+                    }
+            );
+            sandbox.request(me.getName(), request);
         },
 
         setMobileMode: function (isInMobileMode) {
@@ -959,9 +1029,9 @@ Oskari.clazz.define(
         },
         /**
          * @method redrawPluginUIs
-         * Called when map size changes, mode changes or when late comer plugins (coordinatetool, featuredata) enter the mobile toolbar. 
+         * Called when map size changes, mode changes or when late comer plugins (coordinatetool, featuredata) enter the mobile toolbar.
          * Basically just redraws the whole toolbar with the tools in correct order.
-         * 
+         *
          * @param {boolean} modeChanged whether there was a transition between mobile <> desktop
          *
          */
@@ -1169,7 +1239,7 @@ Oskari.clazz.define(
          */
         setLayerPlugin: function (id, plug) {
             if (id === null || id === undefined || !id.length) {
-                this._sandbox.printWarn(
+                this.log.warn(
                     'Setting layer plugin', plug, 'with a non-existent ID:', id
                 );
             }
@@ -1228,10 +1298,15 @@ Oskari.clazz.define(
             var sandbox = this.getSandbox();
             plugin.setMapModule(this);
             var pluginName = plugin.getName();
-            sandbox.printDebug(
+            this.log.debug(
                 '[' + this.getName() + ']' + ' Registering ' + pluginName
             );
             plugin.register();
+            if(this._pluginInstances[pluginName]) {
+                this.log.warn(
+                    '[' + this.getName() + ']' + ' Overwriting plugin with same name ' + pluginName
+                );
+            }
             this._pluginInstances[pluginName] = plugin;
         },
         /**
@@ -1245,7 +1320,7 @@ Oskari.clazz.define(
             var sandbox = this.getSandbox(),
                 pluginName = plugin.getName();
 
-            sandbox.printDebug(
+            this.log.debug(
                 '[' + this.getName() + ']' + ' Unregistering ' + pluginName
             );
             plugin.unregister();
@@ -1263,7 +1338,7 @@ Oskari.clazz.define(
             var sandbox = this.getSandbox(),
                 pluginName = plugin.getName();
 
-            sandbox.printDebug('[' + this.getName() + ']' + ' Starting ' + pluginName);
+            this.log.debug('[' + this.getName() + ']' + ' Starting ' + pluginName);
             try {
                 var tryAgainLater = plugin.startPlugin(sandbox);
                 if(tryAgainLater && typeof plugin.redrawUI === 'function') {
@@ -1271,7 +1346,7 @@ Oskari.clazz.define(
                 }
             } catch (e) {
                 // something wrong with plugin (e.g. implementation not imported) -> log a warning
-                sandbox.printWarn(
+                this.log.warn(
                     'Unable to start plugin: ' + pluginName + ': ' +
                     e
                 );
@@ -1292,7 +1367,7 @@ Oskari.clazz.define(
                 var tryAgainLater = plugin.redrawUI(me.getMobileMode(), !!force);
                 if(tryAgainLater) {
                     if(force) {
-                        me.getSandbox().printWarn('Tried to force a start on plugin, but it still refused to start', plugin.getName());
+                        me.log.warn('Tried to force a start on plugin, but it still refused to start', plugin.getName());
                     }
                     me.lazyStartPlugins.push(plugin);
                 }
@@ -1308,7 +1383,7 @@ Oskari.clazz.define(
             var sandbox = this.getSandbox(),
                 pluginName = plugin.getName();
 
-            sandbox.printDebug('[' + this.getName() + ']' + ' Starting ' + pluginName);
+            this.log.debug('[' + this.getName() + ']' + ' Starting ' + pluginName);
             plugin.stopPlugin(sandbox);
         },
         /**
@@ -1354,7 +1429,7 @@ Oskari.clazz.define(
         /**
          * @method getSandbox
          * Returns reference to Oskari sandbox
-         * @return {Oskari.mapframework.sandbox.Sandbox}
+         * @return {Oskari.Sandbox}
          */
         getSandbox: function () {
             return this._sandbox;
@@ -1415,9 +1490,56 @@ Oskari.clazz.define(
          * @param  {Object} styles styles object
          */
         registerWellknownStyle: function(key, styles) {
-            var me = this;
+            var me = this,
+                sandbox = this.getSandbox();
+
             if(key && styles){
-                me._wellknownStyles[key] = styles;
+                var styleKey = Oskari.util.sanitize(key);
+                var sanitizedStyles = {};
+                var added = 0;
+
+                for(var name in styles) {
+                    var styleName = Oskari.util.sanitize(name);
+                    var style = styles[name];
+
+                    // if supported style format. Currently now supported only svg.
+                    if(style && typeof style.data === 'string' && style.data.indexOf('<svg')>-1) {
+                        if(!sanitizedStyles[styleKey]){
+                            sanitizedStyles[styleKey] = {};
+                        }
+                        sanitizedStyles[styleKey][styleName] = {
+                            offsetX: (style.offsetX !== null && Oskari.util.isNumber(style.offsetX)) ? parseFloat(Oskari.util.sanitize(style.offsetX)) : null,
+                            offsetY: (style.offsetY !== null && Oskari.util.isNumber(style.offsetY)) ? parseFloat(Oskari.util.sanitize(style.offsetY)) : null,
+                            data: (style.data !== null) ? Oskari.util.sanitize(style.data) : null
+                        };
+
+                        if(styleName && !sanitizedStyles[styleKey][styleName].data) {
+                            delete sanitizedStyles[styleKey][styleName];
+                        } else {
+                            added++;
+                        }
+                    }
+                }
+
+                if(added === 0) {
+                    me.log.warn('Cannot add wellknown style for key=' + key + ', please check request!');
+                    delete sanitizedStyles[styleKey];
+                }
+
+                if(styleKey && sanitizedStyles[styleKey]) {
+                    if(me._wellknownStyles[styleKey]){
+                        me.log.warn('Founded allready added wellknown style for key=' + key + ', merging styles');
+                        for(var sanitizedStyleName in sanitizedStyles[styleKey]) {
+                            if(me._wellknownStyles[styleKey][sanitizedStyleName]) {
+                                me.log.warn('Founded allready added wellknown style for key=' + key + ' and style name='+sanitizedStyleName+', replacing style');
+                            }
+                            me._wellknownStyles[styleKey][sanitizedStyleName] = sanitizedStyles[styleKey][sanitizedStyleName];
+                        }
+                    }
+                    else {
+                        me._wellknownStyles[styleKey] = sanitizedStyles[styleKey];
+                    }
+                }
             }
         },
 
@@ -1430,13 +1552,21 @@ Oskari.clazz.define(
          * @return {Object} returns styles for wanted key or if defined also style name return only wanted style
          */
         getWellknownStyle: function(key, style) {
-            var me = this;
-            if(!me._wellknownStyles[key]) {
-                return null;
+            var me = this,
+                sandbox = this.getSandbox();
+
+            if(!me._wellknownStyles[key] && !style) {
+                this.log.warn('Not found wellknown markers for key=' + key + ', returning default markers');
+                return Oskari.getMarkers();
             }
 
             if(key && style){
-                return me._wellknownStyles[key][style]
+                if(me._wellknownStyles[key] && me._wellknownStyles[key][style]) {
+                    return me._wellknownStyles[key][style];
+                } else {
+                    this.log.warn('Not found wellknown markers for key=' + key + ' and style=' + style + ', returning default marker');
+                    return Oskari.getDefaultMarker();
+                }
             } else {
                 return me._wellknownStyles[key];
             }
@@ -1480,7 +1610,7 @@ Oskari.clazz.define(
                 var markers = Oskari.getMarkers();
                 svgObject = markers[style.shape];
                 if(!svgObject) {
-                    svgObject = markers[this._defaultMarker.shape];
+                    svgObject = Oskari.getDefaultMarker();
                 }
 
                 if(style.color) {
@@ -1517,7 +1647,7 @@ Oskari.clazz.define(
                 style.shape.key && style.shape.name) {
                 svgObject = this.getWellknownStyle(style.shape.key, style.shape.name);
                 if(svgObject === null) {
-                    sandbox.printWarn('Not identified wellknown marker shape. Not handled getSvg.');
+                    this.log.warn('Not identified wellknown marker shape. Not handled getSvg.');
                     return null;
                 }
                 isWellknownMarker = true;
@@ -1595,14 +1725,19 @@ Oskari.clazz.define(
                 offsetY: 16
             };
 
-            if(isMarker && isMarkerShape && marker.data.shape < Oskari.getMarkers().length){
-                markerDetails = Oskari.getMarkers()[marker.data.shape];
+            if(isMarker && isMarkerShape){
+                if(marker.data.shape < Oskari.getMarkers().length) {
+                    markerDetails = Oskari.getMarkers()[marker.data.shape];
+                }
+                else {
+                    markerDetails = Oskari.getDefaultMarker();
+                }
             } else if(isCustomMarker) {
                 markerDetails = {
                     data: marker.data.shape.data,
                     offsetX: marker.data.shape.x || marker.data.offsetX,
                     offsetY: marker.data.shape.x || marker.data.offsetY
-                }
+                };
             }
 
             var dx = !isNaN(markerDetails.offsetX) ? markerDetails.offsetX : 16;
@@ -1668,7 +1803,7 @@ Oskari.clazz.define(
            htmlObject.find('path').attr(attr,value);
 
            if(htmlObject.find('path').length>1) {
-              sandbox.printWarn('Founded more than one <path> in SVG. SVG can maybe looks confusing');
+              this.log.warn('Founded more than one <path> in SVG. SVG can maybe looks confusing');
            }
 
            return htmlObject.outerHTML();
@@ -1716,9 +1851,7 @@ Oskari.clazz.define(
                 j,
                 el;
 
-            for (i = 0; i < elements.length; i += 1) {
-                el = elements[i];
-                // FIXME build the function outside the loop
+            var removeClasses = function(el) {
                 el.removeClass(function (index, classes) {
                     var removeThese = '',
                         classNames = classes.split(' ');
@@ -1733,6 +1866,11 @@ Oskari.clazz.define(
                     // Return the class names to be removed.
                     return removeThese;
                 });
+            };
+
+            for (i = 0; i < elements.length; i += 1) {
+                el = elements[i];
+                removeClasses(el);
 
                 // Add the new font as a CSS class.
                 el.addClass(classToAdd);
@@ -2008,7 +2146,7 @@ Oskari.clazz.define(
                 if (lps.hasOwnProperty(p)) {
                     layersPlugin = lps[p];
                     if (!layersPlugin) {
-                        me.getSandbox().printWarn(
+                        me.log.warn(
                             'LayerPlugins has no entry for "' + p + '"'
                         );
                     }
@@ -2035,8 +2173,8 @@ Oskari.clazz.define(
         afterMapLayerAddEvent: function (event) {
             var map = this.getMap(),
                 layer = event.getMapLayer(),
-                keepLayersOrder = event.getKeepLayersOrder(),
-                isBaseMap = event.isBasemap(),
+                keepLayersOrder = true,
+                isBaseMap = false,
                 layerPlugins = this.getLayerPlugins(),
                 layerFunctions = [];
 
@@ -2095,6 +2233,27 @@ Oskari.clazz.define(
             }
             //checkig other things, will be added later...
             return false;
+        },
+        /**
+         * @method handleMapLayerUpdateRequest
+         * Update layer params and force update (wms) or force redraw for other layer types
+         * @param layerId
+         * @param {boolean} forced
+         * @param {Object} params
+         */
+        handleMapLayerUpdateRequest: function(layerId, forced, params) {
+            var me = this,
+            	sandbox = me.getSandbox(),
+            	layerPlugins = me.getLayerPlugins(),
+            	layer = sandbox.findMapLayerFromSelectedMapLayers(layerId);
+
+            _.each(layerPlugins, function (plugin) {
+                // true if either plugin doesn't have the function or says the layer is supported.
+                var isSupported = !_.isFunction(plugin.isLayerSupported) || plugin.isLayerSupported(layer);
+                if (_.isFunction(plugin.updateLayerParams) && isSupported) {
+                    plugin.updateLayerParams(layer, forced, params);
+                }
+            });
         }
 /* --------------- /MAP LAYERS ------------------------ */
     }, {

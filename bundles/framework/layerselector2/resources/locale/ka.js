@@ -10,19 +10,19 @@ Oskari.registerLocalization(
             "generic": "სისტემის შეცდომა / სცადეთ მოგვიანებით",
             "loadFailed": "შეცდომა ფენების ჩატვირთვისას/ ხელახლა ჩატვირთეთ გვერდი თქვენს ბრაუზერში და შეარჩიეთ ფენა",
             "noResults": "ძებნა დასრულდა უშედეგოდ",
-            "noResultsForKeyword": "NOT TRANSLATED",
-            "minChars": "NOT TRANSLATED"
+            "noResultsForKeyword": "",
+            "minChars": ""
         },
         "loading": "ჩატვირთვა...",
         "filter": {
             "text": "ფენების ძებნა",
-            "keywordsTitle": "NOT TRANSLATED",
-            "shortDescription": "NOT TRANSLATED",
-            "description": "NOT TRANSLATED",
+            "keywordsTitle": "",
+            "shortDescription": "",
+            "description": "",
             "inspire": "თემების მიხედვით",
             "organization": "მონაცემების მიმწოდებლების მიხედვით",
             "published": "მომხმარებლები",
-            "didYouMean": "NOT TRANSLATED"
+            "didYouMean": ""
         },
         "published": {
             "organization": "გამოქვეყნებული ფენა",
@@ -42,6 +42,10 @@ Oskari.registerLocalization(
                 "tooltip": "ფენა ამჟამად მიუწვდომელია",
                 "iconClass": "backendstatus-down"
             },
+            "ERROR": {
+                "tooltip": "ფენა ამჟამად მიუწვდომელია",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "ფენა შეიძლება პერიოდულად მიუწვდომელი იყოს რამდენიმე დღის განმავლობაში",
                 "iconClass": "backendstatus-maintenance"
@@ -56,14 +60,14 @@ Oskari.registerLocalization(
             }
         },
         "buttons": {
-            "ok": "NOT TRANSLATED"
+            "ok": ""
         },
         "types": {
-            "syn": "NOT TRANSLATED",
-            "lk": "NOT TRANSLATED",
-            "vk": "NOT TRANSLATED",
-            "ak": "NOT TRANSLATED",
-            "yk": "NOT TRANSLATED"
+            "syn": "",
+            "lk": "",
+            "vk": "",
+            "ak": "",
+            "yk": ""
         },
         "layerFilter": {
             "buttons": {
@@ -77,5 +81,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

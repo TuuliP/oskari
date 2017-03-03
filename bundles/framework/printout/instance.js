@@ -55,7 +55,7 @@ Oskari.clazz.define("Oskari.mapframework.bundle.printout.PrintoutBundleInstance"
         },
         /**
          * @method getSandbox
-         * @return {Oskari.mapframework.sandbox.Sandbox}
+         * @return {Oskari.Sandbox}
          */
         getSandbox: function () {
             return this.sandbox;
@@ -308,29 +308,6 @@ Oskari.clazz.define("Oskari.mapframework.bundle.printout.PrintoutBundleInstance"
                     me.printout.hide();
                 }
                 me.printout.printMap(printParams);
-            },
-            /**
-             * Bundles could plot with prespcefied parcel conf
-             * @method Printout.PrintWithParcelUIEvent
-             * @param {Object} event
-             */
-            'Printout.PrintWithParcelUIEvent': function (event) {
-                var me = this,
-                    contentId = event.getContentId(),
-                    printParams = event.getPrintParams(),
-                    geoJson = event.getGeoJsonData(),
-                    tableJson = event.getTableData();
-
-                if (geoJson) {
-                    me.geoJson = geoJson;
-                }
-                if (tableJson) {
-                    me.tableJson = tableJson;
-                }
-                me.setPublishMode(true);
-                // configure UI
-                me.printout.modifyUIConfig4Parcel(printParams);
-                me.printout.setLayoutParams(printParams);
             }
         },
 
@@ -432,19 +409,10 @@ Oskari.clazz.define("Oskari.mapframework.bundle.printout.PrintoutBundleInstance"
                 tools = jQuery('#maptools'),
                 i;
 
-            // check if statsgrid mode is on
-            // -> disable statsgrid mode
-            var selectedLayers = me.sandbox.findAllSelectedMapLayers(),
-                layer,
-                request;
-            for (i = 0; i < selectedLayers.length; i += 1) {
-                layer = selectedLayers[i];
-                if (layer.getLayerType() === "stats") {
-                    request = me.sandbox.getRequestBuilder('StatsGrid.StatsGridRequest')(false, layer);
-                    me.sandbox.request(me.getName(), request);
-                    break;
-                }
-            }
+            // trigger an event letting other bundles know we require the whole UI
+            var eventBuilder = this.sandbox.getEventBuilder('UIChangeEvent');
+            this.sandbox.notifyAll(eventBuilder(this.mediator.bundleId));
+
             if (blnEnabled) {
 
                 map.addClass('mapPrintoutMode');

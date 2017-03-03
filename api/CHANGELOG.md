@@ -9,6 +9,162 @@ Some extra tags:
 - [rpc] tag indicates that the change affects RPC API
 - [breaking] tag indicates that the change is not backwards compatible
 
+## 1.41
+
+### [mod] [rpc] RouteResultEvent
+
+Now includes the parameters from the request under rawParams key. You can also send an additional id when making the request and the id will be returned under the rawParams. As some routes take longer to determine than others this can be used to detect order of the responses.
+
+Also a RouteResultEvent with success: false is now sent correctly if there's a network issue or some other internal problem.
+
+### [mod] [rpc] AfterMapMoveEvent
+
+The marker flag has been removed as it was misleading. The value was always false.
+
+### [rem] FeaturesAvailableEvent
+
+Event removed as deprecated and unsupported. Use MapModulePlugin.AddFeaturesToMapRequest instead.
+
+### [mod] AddMapLayerRequest
+
+Request only has one parameter: the layer ID. This simplifies layer order handling and makes it work more intuitively.
+
+### [rem] DimMapLayerRequest, HighlightMapLayerRequest, AfterDimMapLayerEvent and AfterHighlightMapLayerEvent
+
+The above requests and events have been merged to "map.layer.activation" request and event. It has a new boolean flag indicating activation/deactivation instead of own events/requests.
+
+### [rem] AfterShowMapLayerInfoEvent
+
+Event removed as backendstatus bundle sent it to itself reacting to ShowMapLayerInfoRequest that it also handles.
+
+### [rem] CtrlKeyDownRequest and CtrlKeyUpRequest
+
+Requests removed as deprecated. These should be events if anything. Oskari.ctrlKeyDown(blnPressed) can be used instead, but it's deprecated as well.
+
+### [rem] HideMapMarkerRequest and AfterHideMapMarkerEvent
+
+AfterHideMapMarkerEvent was removed as it's no longer used and is misleading as it was used to notify markerlayer being hidden.
+HideMapMarkerRequest was removed as it's no longer used and is misleading. Use MapModulePlugin.MarkerVisibilityRequest instead.
+
+### [rem] Printout.PrintWithParcelUIEvent
+
+Removed parcel application specific event from printout.
+
+## 1.40
+
+### [mod] [rpc] InfoBox.ShowInfoBoxRequest
+
+Updating existing infibox in mobile mode had timing problems and ended in javascript error and/or popup being closed instead of updated. This has been fixed.
+
+### [mod] [rpc] [breaking] feedbackService (Open311)
+
+NOTE! Still under construction, this is a POC solution for testing Open311 servers.
+For more detailed information, see documentation http://oskari.org/api/requests.
+
+#### GetFeedbackRequest & PostFeedbackRequest
+
+The parameters "getServiceRequests" and "postServiceRequest" are no longer available, but the same content can now be sent with parameter named "payload".
+The payload no longer needs to be JSON.stringified.
+
+#### GetFeedbackServiceRequest & GetFeedbackServiceDefinitionRequest
+
+The two requests have been merged to GetFeedbackServiceRequest. The request without a parameter results in a FeedbackResultEvent with a listing of services and
+ when the request is sent with a parameter with the value of a service code the event will include metadata (service definition) for that single service.
+
+## 1.39
+
+#### [add] [rpc] New MapModulePlugin.MapLayerUpdateRequest Request
+
+With the request you can force redraw of layers or update any arbitrary layer parameters, such as a WMS layer's SLD_BODY.
+
+Note! When OpenLayers3 is used, GET requests longer than 2048 bytes will be automatically transformed to async ajax POST-requests and proxied. Thus the service itself also has to support http POST-method.
+
+OpenLayers2 will always use GET-requests and will fail, if the GET-request's length exceeds the allowed maximum.
+
+```javascript
+sandbox.postRequestByName('MapModulePlugin.MapLayerUpdateRequest', [layerId, true, {
+    SLD_BODY:
+        '<StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd">'+
+        '    <NamedLayer>'+
+        '    <Name>oskari:kunnat2013</Name>'+
+        '    <UserStyle>'+
+        '    <Title>SLD Cook Book: Simple polygon</Title>'+
+        '    <FeatureTypeStyle>'+
+        '    <Rule>'+
+        '    <PolygonSymbolizer>'+
+        '    <Fill>'+
+        '    <CssParameter name="fill">#000080</CssParameter>'+
+        '    </Fill>'+
+        '    </PolygonSymbolizer>'+
+        '    </Rule>'+
+        '    </FeatureTypeStyle>'+
+        '    </UserStyle>'+
+        '    </NamedLayer>'+
+        '    </StyledLayerDescriptor>'
+}]);
+```
+
+### [mod] [rpc] infobox
+
+Fixed an issue where InfoBox.InfoBoxEvent was not sent on close when the map is in mobile mode.
+
+## 1.38
+
+#### [add] [rpc] New MapModulePlugin.MarkerVisibilityRequest Request
+
+Use this request to show/hide added marker from map.
+
+Hide wanted marker from map:
+```javascript
+channel.postRequest('MapModulePlugin.MarkerVisibilityRequest', [false, 'TEST_MARKER_ID']);
+```
+
+Hide all markers from map:
+```javascript
+channel.postRequest('MapModulePlugin.MarkerVisibilityRequest', [false]);
+```
+
+Show wanted marker from map:
+```javascript
+channel.postRequest('MapModulePlugin.MarkerVisibilityRequest', [true, 'TEST_MARKER_ID']);
+```
+
+Show all markers from map:
+```javascript
+channel.postRequest('MapModulePlugin.MarkerVisibilityRequest', [true]);
+```
+
+#### [mod] [rpc] MapModulePlugin.AddFeaturesToMapRequest
+
+If some feature's style must be updated (for example for highlighting it on click), the first parameter of request should be key-value-object that identifiers the specific feature existing on the map. Request will check if the feature with given property exists on the map and will update its style according to the style given in the options object.
+
+```javascript
+var featureProperty = {'id': 'F1'}; // key is feature property name, value is the property matching value to style
+var options = {
+    featureStyle: {
+        fill: {
+            color: '#ff0000'
+        },
+        stroke : {
+            color: '#ff0000',
+            width: 5
+        },
+        text : {
+            scale : 1.3,
+            fill : {
+                color : 'rgba(0,0,0,1)'
+            },
+            stroke : {
+                color : 'rgba(255,255,255,1)',
+                width : 2
+            }
+        }
+    },
+    layerId: 'VECTOR'
+};
+channel.postRequest('MapModulePlugin.AddFeaturesToMapRequest', [featureProperty, options]);
+ ```
+
 ## 1.37
 
 ### mapmodule
@@ -117,8 +273,6 @@ Posts user's feedback data to the Open311 service.
 
 For more detailed information, see documentation http://oskari.org/api/requests.
 
-feedback.open331.key=     setup is required in oskari server properties
-(api_key  of Open311 service)
 
 #### [add] [rpc] GetFeedbackServiceRequest
 

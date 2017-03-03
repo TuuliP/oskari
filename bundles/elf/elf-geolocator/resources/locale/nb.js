@@ -28,10 +28,15 @@ Oskari.registerLocalization(
             "fuzzyResultsTitle": "Resultat av fuzzy søk",
             "filterResultsTitle": "Resultat av søk filtrert på region",
             "countryFilter": "Landfilter",
+            "locationFilter": "",
+            "namelangFilter": "",
             "backButton": "Tilbake",
             "geolocButton": "Lokaliser nærmeste sted",
             "geolocDesc": "Klikk i kartet for å lokalisere nærmeste sted",
             "noResults": "Ingen søkeresultater",
+            "showMore": "Vis søkealternativer",
+            "showLess": "Skjul søkealternativer",
+            "emptyOption": "* Ingen valg *",
             "errors": {
                 "searchTermMissing": "Søkeord er påkrevd",
                 "searchFailed": "Søket har feilet. Prøv igjen seinere."
@@ -43,5 +48,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

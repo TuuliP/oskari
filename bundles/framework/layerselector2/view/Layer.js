@@ -18,12 +18,12 @@ Oskari.clazz.define("Oskari.mapframework.bundle.layerselector2.view.Layer",
         this.backendStatus = 'UNKNOWN'; // see also 'backendstatus-ok'
         this.ui = this._createLayerContainer(layer);
     }, {
-        __template: '<div class="layer"><input type="checkbox" /> ' + 
+        __template: '<div class="layer"><input type="checkbox" /> ' +
                     '<div class="layer-tools">'+
-                    '   <div class="layer-backendstatus-icon backendstatus-unknown" title=""></div>' + 
+                    '   <div class="layer-backendstatus-icon backendstatus-unknown" title=""></div>' +
                     '   <div class="layer-icon"></div>'+
                     '   <div class="layer-info"></div>'+
-                    '</div>' + 
+                    '</div>' +
                     '<div class="layer-title"></div>' +
         //'<div class="layer-keywords"></div>' +
         '</div>',
@@ -211,7 +211,7 @@ Oskari.clazz.define("Oskari.mapframework.bundle.layerselector2.view.Layer",
             layerDiv.find('input').change(function () {
                 checkbox = jQuery(this);
                 if (checkbox.is(':checked')) {
-                    sandbox.postRequestByName('AddMapLayerRequest', [layer.getId(), false, layer.isBaseLayer()]);
+                    sandbox.postRequestByName('AddMapLayerRequest', [layer.getId()]);
                 } else {
                     sandbox.postRequestByName('RemoveMapLayerRequest', [layer.getId()]);
                 }

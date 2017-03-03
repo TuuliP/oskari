@@ -23,7 +23,8 @@
     "trim": "./node_modules/.bin/grunt trimtrailingspaces",
     "lint": "./node_modules/.bin/jshint ../bundles",
     "oskari2excel": "./node_modules/.bin/grunt genL10nExcels",
-    "excel2oskari": "./node_modules/.bin/grunt impL10nExcels"
+    "excel2oskari": "./node_modules/.bin/grunt impL10nExcels",
+    "clean-l10n": "./node_modules/.bin/grunt localizationJSCleanup"
   },
   "devDependencies": {
     "adm-zip": "^0.4.7",
@@ -35,14 +36,12 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.0",
     "grunt-contrib-copy": "^1.0.0",
-    "grunt-minify-polymer": "^2.1.0",
     "grunt-sass": "^1.1.0",
     "grunt-trimtrailingspaces": "^2.2.0",
-    "grunt-vulcanize": "^1.0.0",
     "jshint": "^2.9.1",
     "lodash": "^4.12.0",
     "node-fs-extra": "^0.8.1",
-    "openlayers": "3.15.1",
+    "openlayers": "3.20.1",
     "uglify-js": "^2.6.2",
     "uglifycss": "0.0.20",
     "xml2js": "^0.4.16"

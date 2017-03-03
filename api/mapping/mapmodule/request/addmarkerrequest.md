@@ -58,7 +58,11 @@ Parameters for data-object:
   For example:
   2,
   'http://demo.paikkatietoikkuna.fi/Oskari/resources/framework/bundle/mapmodule-plugin/images/marker.png' or
-  '<svg width="32" height="32"></svg>'</td><td> 2 </td>
+  '<svg width="32" height="32"></svg>'
+
+  *Note!* IE11 has an unresolved issue with linked SVG-files: https://connect.microsoft.com/IE/feedbackdetail/view/925655/svg-image-has-0x0-size-in-ie11
+  You can add the SVG as a string for the shape, but linking it from an URL results in an JS error on IE11.
+</td><td> 2 </td>
 </tr>
 <tr>
   <td> size </td><td> Number </td><td> size of the marker. If you want add a external icon witch is different size than 32 x 32 pixel then you need for ol2 tell here icon size (only supported square) </td><td> 1 </td>
@@ -105,6 +109,12 @@ SVG-viewport/x/y attributes don't work correctly with custom marker shapes. Don'
 Instead use width="32" height="32". This is a working version of above:
 ```
 <svg width="32" height="32" style="enable-background:new 0 0 32 32;"><style type="text/css">.st0 {fill: #0557d3;} .shadow {filter: drop-shadow( 0 1.2rem 1rem #333   );} .st1{fill:#FFFFFF;}</style><g><g><path class="st0" d="M26.3,11.3C26.3,5.6,21.7,1,16,1S5.7,5.6,5.7,11.3c0,2,0.6,3.8,1.5,5.4h0L16,31l8.9-14.3h0 C25.8,15.2,26.3,13.3,26.3,11.3z"/></g><circle class="st1" cx="16" cy="11.2" r="4.1"/></g></svg>
+```
+
+The custom SVG is wrapped with a template having viewBox and width/height of 64x64 so the center can be anywhere in the 32x32 custom SVG.
+The provided offsetX and offsetY is used to modify the custom SVGs x/y attributes to place the custom shape inside the 64x64 box and make the marker point to correct coordinates.
+```
+<svg viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg"> ... your svg ... </svg>
 ```
 
 ### Oskari builded icons overridings

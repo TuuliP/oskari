@@ -30,7 +30,7 @@ Oskari.registerLocalization(
                 "link": "Data source",
                 "popup": {
                     "title": "Data Sources",
-                    "content": "NOT TRANSLATED"
+                    "content": ""
                 },
                 "button": {
                     "close": "Close"
@@ -58,7 +58,8 @@ Oskari.registerLocalization(
                 "places": "Features",
                 "description": "Description",
                 "link": "Web address",
-                "name": "Name"
+                "name": "Name",
+                "noAttributeData": "No attributes to show, please open feature data to see hidden attributes."
             },
             "PublisherToolbarPlugin": {
                 "test": "test",
@@ -109,5 +110,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

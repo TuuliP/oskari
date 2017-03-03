@@ -25,10 +25,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
                 '<div>'+
                 '    <select id="projection" class="lon-input projection-select projection-transformation"></select>'+
                 '</div>'+
-                '<div class="clear"/>'+
-                '<div class="coordinate-tool-projection-change-confirmation margintop" style="display:none;">'+
-                '   <div class="projection-change-confirmation-message"></div>'+
-                '</div>'
+                '<div class="clear"/>'
             ),
             projectionSelectOption: jQuery('<option></option>')
         };
@@ -44,18 +41,22 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
             var me = this,
                 keys = _.keys(me._config.supportedProjections);
             me._popupContent = popupContent;
+
             if (keys && keys.length > 1) {
                 me._popupContent.find('.srs').append(me._templates.projectionTransformSelect.clone());
+
                 me._popupContent.find('.coordinatetool-projection-change-header').html(me._locale.coordinatesTransform.header);
                 me._projectionSelect =  me._popupContent.find('.projection-select');
                 me._populateCoordinatesTransformSelect(me._projectionSelect);
                 me._projectionSelect.on('change', function(event) {
+                    var nowSelected = jQuery("#projection option:selected").val();
                     var coordinateToolPlugin = me._mapmodule.getPluginInstances('CoordinateToolPlugin');
-
-                    //getting transformed coordinate from frontend first
                     var data = coordinateToolPlugin._getInputsData();
                     var usersInputs = _.clone(data);
+                    coordinateToolPlugin._projectionChanged = true;
                     coordinateToolPlugin.refresh(data);
+                    coordinateToolPlugin._labelMetricOrDegrees(nowSelected);
+                    coordinateToolPlugin._changeCoordinateContainerVisibility(coordinateToolPlugin._allowDegrees(nowSelected));
 
                     var successCb = function(newLonLat) {
                          coordinateToolPlugin._updateLonLat(newLonLat);
@@ -67,10 +68,10 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
 
                     //getting precise transformed coordinates from server
                     me.getTransformedCoordinatesFromServer(usersInputs, coordinateToolPlugin._previousProjection, me._projectionSelect.val(), successCb, errorCb);
-                    coordinateToolPlugin._previousProjection = jQuery("#projection option:selected").val();
-
+                    coordinateToolPlugin._previousProjection = nowSelected;
                 });
             }
+
             return me._projectionSelect;
         },
         /**
@@ -141,23 +142,33 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
          /**
          * Transforms the given coordinates using action_route=Coordinates and updates coordinates to the UI
          * @method getTransformedCoordinatesFromServer
-         * @param {Object} lonlat: lat/lon coordinates to be transformed
+         * @param {Object} data: {lonlat: lat: '', lon: ''} coordinates to be transformed
          * @param {String} srs: projection for given lonlat params like "EPSG:4326"
          * @param {String} targetSRS: projection to transform to like "EPSG:4326"
          * @param {Function} successCb success callback
          * @param {Function} errorCb error callback
          */
-        getTransformedCoordinatesFromServer: function (lonlat, srs, targetSRS, successCb, errorCb) {
+        getTransformedCoordinatesFromServer: function (data, srs, targetSRS, successCb, errorCb) {
             var me = this;
-            if(!lonlat) {
+            if(!data) {
                 var map = me._sandbox.getMap();
-                lonlat = {
+                data = {
                     'lonlat': {
                         'lat': parseFloat(map.getY()),
                         'lon': parseFloat(map.getX())
                     }
                 };
             }
+
+            // If coordinates are empty then not try to transform these
+            if((typeof data.lonlat.lon === 'undefined' && typeof data.lonlat.lat === 'undefined') ||
+                (data.lonlat.lon === '' && data.lonlat.lat === '')) {
+                if(typeof errorCb === 'function') {
+                    errorCb();
+                }
+                return;
+            }
+
             if(!srs) {
                 srs = this._mapmodule.getProjection();
             }
@@ -171,14 +182,14 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
                 me._ajaxXhr = jQuery.ajax({
                     url: me._sandbox.getAjaxUrl('Coordinates'),
                     data: {
-                        lat: lonlat.lonlat.lat,
-                        lon: lonlat.lonlat.lon,
+                        lat: data.lonlat.lat,
+                        lon: data.lonlat.lon,
                         srs: srs,
                         targetSRS: targetSRS
                     },
                     success: function (response) {
                         if (response.lat && response.lon) {
-                            var newLonLat = {
+                            var newData = {
                                 'lonlat': {
                                     'lon': response.lon,
                                     'lat': response.lat
@@ -186,7 +197,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
                             };
                             me._coordinatesFromServer = true;
                             if(typeof successCb === 'function') {
-                                successCb(newLonLat);
+                                successCb(newData);
                             }
                         }
                     },
@@ -196,9 +207,49 @@ Oskari.clazz.define('Oskari.mapframework.bundle.coordinatetool.plugin.Coordinate
                         }
                     }
                 });
-            } else {
-                successCb(lonlat);
             }
+        },
+        /**
+         * format different degree presentations of lon/lat coordinates
+         */
+        _formatDegrees: function(lon, lat, type) {
+            var me = this,
+                degreesX,
+                degreesY,
+                minutesX,
+                minutesY,
+                secondsX,
+                secondsY;
+
+            switch (type) {
+                case "min":
+                    degreesX = parseInt(lon);
+                    degreesY = parseInt(lat);
+                    minutesX = Number((lon - degreesX) * 60).toFixed(5);
+                    minutesY = Number((lat - degreesY) * 60).toFixed(5);
+                    return {
+                        "degreesX": degreesX,
+                        "degreesY": degreesY,
+                        "minutesX": minutesX.replace('.', Oskari.getDecimalSeparator()),
+                        "minutesY": minutesY.replace('.', Oskari.getDecimalSeparator())
+                    };
+                case "sec":
+                    degreesX = parseInt(lon);
+                    degreesY = parseInt(lat);
+                    minutesX = parseFloat((lon - degreesX) * 60);
+                    minutesY = parseFloat((lat - degreesY) * 60);
+                    secondsX = parseFloat((minutesX - parseInt(minutesX))*60).toFixed(3);
+                    secondsY = parseFloat((minutesY - parseInt(minutesY))*60).toFixed(3);
+                    return {
+                        "degreesX": degreesX,
+                        "degreesY": degreesY,
+                        "minutesX": parseInt(minutesX),
+                        "minutesY": parseInt(minutesY),
+                        "secondsX": secondsX.replace('.', Oskari.getDecimalSeparator()),
+                        "secondsY": secondsY.replace('.', Oskari.getDecimalSeparator())
+                    };
+            }
+
         },
         /**
          * @public @method changeToolStyle

@@ -26,6 +26,8 @@ Oskari.clazz.define(
             height: 480
         };
 
+        me.log = Oskari.log('Oskari.mapframework.bundle.infobox.plugin.mapmodule.OpenlayersPopupPlugin');
+
     }, {
 
         /**
@@ -111,7 +113,7 @@ Oskari.clazz.define(
                 lat = position.lat;
             } else {
                 // Send a status report of the popup (it is not open)
-                var evtB = sandbox.getEventBuilder('InfoBox.InfoBoxEvent');
+                var evtB = me.getSandbox().getEventBuilder('InfoBox.InfoBoxEvent');
                 var evt = evtB(id, false);
                 me.getSandbox().notifyAll(evt);
                 return;
@@ -128,7 +130,7 @@ Oskari.clazz.define(
                 } else {
                     me.close(id);
                 }
-                
+
                 delete me._popups[id];
             }
 
@@ -190,9 +192,7 @@ Oskari.clazz.define(
                     popup.setColourScheme(colourScheme);
                 }
                 popup.onClose(function () {
-                    if (me._popups[id] && me._popups[id].type === "mobile") {
-                        delete me._popups[id];
-                    }
+                    me.close(id);
                 });
                 //clear the ugly backgroundcolor from the popup content
                 jQuery(popup.dialog).css('background-color','inherit');
@@ -258,6 +258,29 @@ Oskari.clazz.define(
                 isInMobileMode: isInMobileMode,
                 type: popupType
             };
+
+            // Fix popup header height to match title content height if using desktop popup
+            if(title && !isInMobileMode) {
+                var popupEl = jQuery(popup.div);
+                var popupHeaderEl = popupEl.find('.popupHeader');
+
+                var fixSize = {
+                    top: 0,
+                    left: 0,
+                    height: 24
+                };
+
+                var popupHeaderChildrens = popupHeaderEl.children();
+                popupHeaderChildrens.each(function(){
+                    var popupHeaderChildren = jQuery(this);
+                    fixSize.top += (popupEl.length > 0 && popupHeaderEl.length > 0 && popupHeaderChildren.length > 0) ? popupHeaderChildren.position().top : 0;
+                    fixSize.left += (popupEl.length > 0 && popupHeaderEl.length > 0 && popupHeaderChildren.length > 0) ? popupHeaderChildren.position().left : 0;
+                    fixSize.height += popupHeaderChildren.height() - popupHeaderChildren.position().top;
+                });
+
+                var fixedHeight = fixSize.height;
+                popupHeaderEl.height(fixedHeight);
+            }
             me._setClickEvent(id, popup, contentData, additionalTools, isInMobileMode);
         },
 
@@ -317,15 +340,15 @@ Oskari.clazz.define(
             headerWrapper.append(closeButton);
 
             //add additional btns
-               jQuery.each( additionalTools, function( index, key ){
-                    var additionalButton = me._headerAdditionalButton.clone();
-                    additionalButton.attr({
-                        'id': key.name,
-                        'class': key.iconCls,
-                        'style': key.styles
-                    });
-                    headerWrapper.append(additionalButton);
+            jQuery.each( additionalTools, function( index, key ){
+                var additionalButton = me._headerAdditionalButton.clone();
+                additionalButton.attr({
+                    'id': key.name,
+                    'class': key.iconCls,
+                    'style': key.styles
                 });
+                headerWrapper.append(additionalButton);
+            });
 
             resultHtml = arrow.outerHTML() +
                 headerWrapper.outerHTML() +
@@ -366,7 +389,7 @@ Oskari.clazz.define(
 
                 contentWrapper.attr('id', 'oskari_' + id + '_contentWrapper');
 
-                if (actions) {
+                if (actions && _.isArray(actions)) {
                     _.forEach(actions, function (action) {
                         var sanitizedActionName = Oskari.util.sanitize(action.name);
                         if (action.type === "link") {
@@ -395,6 +418,8 @@ Oskari.clazz.define(
                         }
                         group = currentGroup;
                     });
+                } else if(typeof actions === 'object') {
+                    me.log.warn('Popup actions must be an Array. Cannot add tools.');
                 }
 
                 contentDiv.append(contentWrapper);
@@ -410,7 +435,7 @@ Oskari.clazz.define(
             if (isMobilePopup) {
                 popup.dialog[0].onclick = function (evt) {
                     me._handleInfoboxClick(evt, id, contentData, additionalTools);
-                }
+                };
             } else {
                  // override
                 popup.events.un({
@@ -565,23 +590,16 @@ Oskari.clazz.define(
                 'z-index': '16000'
             });
 
-            if (jQuery.browser.msie) {
-                // allow scrolls to appear in IE, but not in any other browser
-                // instead add some padding to the wrapper to make it look better
-                wrapper.css({
-                    'padding-bottom': '5px'
-                });
-            } else {
-                var height = wrapper.height();
-                height = height > maxHeight ? (maxHeight + 30) + 'px' : 'auto';
-                var isOverThanMax = height > maxHeight ? true : false;
-                content.css({
-                    'height': height
-                });
-                if(!isOverThanMax) {
-                    popup.css('min-height', 'inherit');
-                }
+            var height = wrapper.height();
+            height = height > maxHeight ? (maxHeight + 30) + 'px' : 'auto';
+            var isOverThanMax = height > maxHeight ? true : false;
+            content.css({
+                'height': height
+            });
+            if(!isOverThanMax) {
+                popup.css('min-height', 'inherit');
             }
+
         },
 
         /**
@@ -706,7 +724,7 @@ Oskari.clazz.define(
                     if (popup.isInMobileMode) {
                         //are we moving away from the mobile mode? -> close and rerender.
                         if (!me._isInMobileMode(popup.options.mobileBreakpoints)) {
-                            popup.popup.close();
+                            popup.popup.close(true);
                             me._renderPopup(pid, popup.contentData, popup.title, popup.lonlat, popup.options, false, []);
                         }
                     } else {
@@ -772,37 +790,43 @@ Oskari.clazz.define(
          * @param {String} id
          *      id for popup that we want to close (optional - if not given, closes all popups)
          */
-        close: function (id) {
+        close: function (id, position) {
             // destroys all if id not given
             // deletes reference to the same id will work next time also
             var pid,
-                popup;
+                popup,
+                event,
+                sandbox = this.getMapModule().getSandbox();
             if (!id) {
                 for (pid in this._popups) {
                     if (this._popups.hasOwnProperty(pid)) {
                         popup = this._popups[pid];
-                        if(popup.type && popup.type === 'mobile') {
-                            popup.popup.close();
+                        delete this._popups[pid];
+                        if(popup.type === 'mobile') {
+                            popup.popup.close(true);
                         } else {
                             popup.popup.destroy();
                         }
-
-                        delete this._popups[pid];
+                        event = sandbox.getEventBuilder('InfoBox.InfoBoxEvent')(pid, false);
+                        sandbox.notifyAll(event);
                     }
                 }
                 return;
             }
             // id specified, delete only single popup
-            if (this._popups[id]) {
-                if (this._popups[id].popup) {
-                    popup = this._popups[id].popup;
-                    if(popup.type && popup.type === 'mobile') {
-                        popup.close();
-                    } else {
-                        popup.destroy();
-                    }
-                }
+            popup = this._popups[id];
+            if (popup) {
                 delete this._popups[id];
+                if (!popup.popup) {
+                    return;
+                }
+                if(popup.type === 'mobile') {
+                    popup.popup.close();
+                } else {
+                    popup.popup.destroy();
+                }
+                event = sandbox.getEventBuilder('InfoBox.InfoBoxEvent')(id, false);
+                sandbox.notifyAll(event);
             }
             // else notify popup not found?
         },

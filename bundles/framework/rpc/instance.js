@@ -12,6 +12,7 @@ Oskari.clazz.define(
         this._channel = null;
         this.eventHandlers = {};
         this.requestHandlers = {};
+        this.log = Oskari.log('RPC');
     },
     {
         /**
@@ -52,22 +53,22 @@ Oskari.clazz.define(
             this.__init(conf);
 
             if (!Channel) {
-                me.sandbox.printWarn('RemoteProcedureCallInstance.startPlugin(): JSChannel not found.');
+                me.log.warn('RemoteProcedureCallInstance.startPlugin(): JSChannel not found.');
                 return;
             }
 
             if (domain === null || domain === undefined || !domain.length) {
-                me.sandbox.printWarn('RemoteProcedureCallInstance.startPlugin(): missing domain.');
+                me.log.warn('RemoteProcedureCallInstance.startPlugin(): missing domain.');
                 return;
             }
 
             if (domain === '*') {
-                me.sandbox.printWarn('RemoteProcedureCallInstance.startPlugin(): * is not an allowed domain.');
+                me.log.warn('RemoteProcedureCallInstance.startPlugin(): * is not an allowed domain.');
                 return;
             }
 
             if (window === window.parent) {
-                me.sandbox.printWarn('RemoteProcedureCallInstance.startPlugin(): Target window is same as present window - not allowed.');
+                me.log.warn('RemoteProcedureCallInstance.startPlugin(): Target window is same as present window - not allowed.');
                 return;
             }
 
@@ -105,7 +106,7 @@ Oskari.clazz.define(
             );
 
             // Makes it possible to post requests
-            // channel.call({method: 'postRequest', params: ['MapMoveRequest', [centerX, centerY, zoom, marker, srsName]]})
+            // channel.call({method: 'postRequest', params: ['MapMoveRequest', [centerX, centerY, zoom]]})
             channel.bind(
                 'postRequest',
                 function (trans, params) {
@@ -167,7 +168,6 @@ Oskari.clazz.define(
                     }
                 }
             }
-
             if (allowedRequests === null || allowedRequests === undefined) {
                 allowedRequests = ['InfoBox.ShowInfoBoxRequest',
                     'InfoBox.HideInfoBoxRequest',
@@ -177,6 +177,7 @@ Oskari.clazz.define(
                     'MapModulePlugin.GetFeatureInfoRequest',
                     'MapModulePlugin.MapLayerVisibilityRequest',
                     'MapModulePlugin.RemoveMarkersRequest',
+                    'MapModulePlugin.MarkerVisibilityRequest',
                     'MapMoveRequest',
                     'ShowProgressSpinnerRequest',
                     'GetRouteRequest',
@@ -189,7 +190,8 @@ Oskari.clazz.define(
                     'MyLocationPlugin.GetUserLocationRequest',
                     'DrawTools.StartDrawingRequest',
                     'DrawTools.StopDrawingRequest',
-                    'MapModulePlugin.ZoomToFeaturesRequest'];
+                    'MapModulePlugin.ZoomToFeaturesRequest',
+                    'MapModulePlugin.MapLayerUpdateRequest'];
             }
             me._allowedFunctions = this.__arrayToObject(allowedFunctions);
             // try to get event/request builder for each of these to see that they really are supported!!
@@ -432,7 +434,7 @@ Oskari.clazz.define(
             'use strict';
             var sb = this.sandbox;
             if(!origin) {
-                sb.printWarn('No origin in RPC message');
+                this.log.warn('No origin in RPC message');
                 // no origin, always deny
                 return false;
             }
@@ -447,10 +449,10 @@ Oskari.clazz.define(
             if(!allowed) {
                 // always allow from localhost
                 if(originDomain === 'localhost') {
-                    sb.printWarn('Origin mismatch, but allowing localhost. Published to: ' + domain);
+                    this.log.warn('Origin mismatch, but allowing localhost. Published to: ' + domain);
                     return true;
                 }
-                sb.printWarn('Origin not allowed for RPC: ' + origin);
+                this.log.warn('Origin not allowed for RPC: ' + origin);
             }
             return allowed;
         },

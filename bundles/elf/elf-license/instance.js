@@ -233,8 +233,7 @@ function () {
         me._progressSpinner.insertTo(panel.html);
         me._progressSpinner.start();
 
-        //license info is the first / only item under the metadata's onlineresources. At least sometimes. This is hardly a bullet-proof solution...
-        var licenseUrl = metadataModel.onlineResources[0].url;
+        var licenseUrl = metadataModel.license;
         me.licenseService.doLicenseInformationSearch({
             id: licenseUrl
         }, function (response) {
@@ -456,12 +455,12 @@ function () {
         else {
             title.addClass('text');
             // If user has already logged in  then shows at no right to anyone license
-            if (me._sandbox.getUser().isLoggedIn()) {
+            if (Oskari.user().isLoggedIn()) {
                 title.html(me._locale.dialog.noRightToAnyLicenseModels);
             }
             // Else if user has not logged in then show log in message
             else {
-                title.html(me._locale.dialog.loginShort);
+                me._showLoginInfo(title);
             }
         }
 
@@ -479,6 +478,14 @@ function () {
             me._showLicenseDeactivateParams(data.licenseModels[0], data, infoForUser);
         }
 
+    },
+    _showLoginInfo: function(element){
+        var me = this,
+            html = jQuery('<div>')
+        element.html('<div>' +
+            me._locale.dialog.loginShort +
+            '</div>' +
+            '<div style="margin-top:20px;"><a href="http://locationframework.eu/content/registration" target="_blank">'+me._locale.dialog.registerLinkText+'</a></div>');
     },
     /**
      * Show license deactivate params dialog
@@ -675,12 +682,12 @@ function () {
         else {
             title.addClass('text');
             // If user has already logged in  then shows at no right to anyone license
-            if (me._sandbox.getUser().isLoggedIn()) {
+            if (Oskari.user().isLoggedIn()) {
                 title.html(me._locale.dialog.noRightToAnyLicenseModels);
             }
             // Else if user has not logged in then show log in message
             else {
-                title.html(me._locale.dialog.loginShort);
+                 me._showLoginInfo(title);
             }
         }
 
@@ -728,12 +735,12 @@ function () {
             licenseDescriptions.remove();
             licenseDescriptionsTitle.remove();
             // If user has already logged in  then shows at no right to anyone license
-            if (me._sandbox.getUser().isLoggedIn()) {
+            if (Oskari.user().isLoggedIn()) {
                 title.html(me._locale.dialog.noRightToAnyLicenseModels);
             }
             // Else if user has not logged in then show log in message
             else {
-                title.html(me._locale.dialog.loginShort);
+                 me._showLoginInfo(title);
             }
         }
         var licenseDialogLink = jQuery("<a>"+me._locale.getLicenseText+"</a>");

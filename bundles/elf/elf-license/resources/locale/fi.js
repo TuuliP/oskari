@@ -9,10 +9,6 @@ Oskari.registerLocalization(
                 "title": "Virhe",
                 "message": "Lisenssitietojen haku epäonnistui."
             },
-            "failedGetLicenseInformation": {
-                "title": "Virhe",
-                "message": "Lisenssipalvelimeen ei saatu yhteyttä."
-            },
             "cannotGetLicensePrice": {
                 "title": "Virhe",
                 "message": "Lisenssin hintatietojen haku epäonnistui."
@@ -59,13 +55,6 @@ Oskari.registerLocalization(
                 "summary": "Lue lisenssiehdot ja hyväksy ne klikkaamalla \"Tilaa lisenssi\". Jos haluat muokata tilauksen tietoja, klikkaa \"Edellinen\". Jos haluat keskeyttää tilauksen, klikkaa \"Sulje\".",
                 "orderDetails": "Tilaamasi lisenssin tiedot näkyvät yläpuolella. Jos haluat sulkea ikkunan, klikkaa \"Sulje\". Jos haluat lopettaa lisenssin, klikkaa \"Keskeytä tilaus\"."
             },
-            "concludeSuccessTitle": "Lisenssin tilaus onnistui",
-            "conclude": {
-                "title": "Lisenssin tiedot",
-                "productid": "Tuote",
-                "licenseid": "Lisenssi",
-                "validto": "Voimassa"
-            },
             "deactivateConfirm": {
                 "title": "Lisenssin lopettaminen",
                 "message": "Haluatko lopettaa lisenssin tilauksen?"
@@ -75,7 +64,8 @@ Oskari.registerLocalization(
             "licenseServiceUrl": "Palvelun URL-osoite: {serviceurl}",
             "licenceConcluded": {
                 "message": "Lisenssin tilaus onnistui. Tarkista lisenssin tiedot alta:"
-            }
+            },
+            "registerLinkText": "Rekisteröidy"
         },
         "buttons": {
             "close": "Sulje",
@@ -88,5 +78,4 @@ Oskari.registerLocalization(
             "yes": "Kyllä"
         }
     }
-}
-);
+});

@@ -26,13 +26,13 @@ Oskari.clazz.define(
 
             "scripts": [{
                 "type": "text/javascript",
-                "src": "../../../../bundles/mapping/mapstats/plugin/StatsLayerPlugin.ol3.js"
+                "src": "../../../../bundles/mapping/mapstats/plugin/AbstractStatsLayerPlugin.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../../bundles/mapping/mapstats/plugin/StatsLayerPlugin2016.ol3.js"
             }, {
                 "type": "text/javascript",
                 "src": "../../../../bundles/mapping/mapstats/domain/StatsLayer.js"
-            }, {
-                "type": "text/javascript",
-                "src": "../../../../bundles/mapping/mapstats/domain/StatsLayerModelBuilder.js"
             }, {
                 "type": "text/javascript",
                 "src": "../../../../bundles/mapping/mapstats/event/StatsVisualizationChangeEvent.js"
@@ -45,23 +45,6 @@ Oskari.clazz.define(
             }, {
                 "type": "text/css",
                 "src": "../../../../bundles/mapping/mapstats/resources/css/mapstats.css"
-            }],
-            "locales": [{
-                "lang": "fi",
-                "type": "text/javascript",
-                "src": "../../../../bundles/mapping/mapstats/resources/locale/fi.js"
-            }, {
-                "lang": "sv",
-                "type": "text/javascript",
-                "src": "../../../../bundles/mapping/mapstats/resources/locale/sv.js"
-            }, {
-                "lang": "en",
-                "type": "text/javascript",
-                "src": "../../../../bundles/mapping/mapstats/resources/locale/en.js"
-            }, {
-                "lang": "es",
-                "type": "text/javascript",
-                "src": "../../../../bundles/mapping/mapstats/resources/locale/es.js"
             }]
         },
         "bundle": {

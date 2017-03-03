@@ -117,15 +117,15 @@ Oskari.clazz.define('Oskari.userinterface.bundle.ui.UserInterfaceBundleInstance'
                 me
             );
 
-            sandbox.addRequestHandler(
+            sandbox.requestHandler(
                 'userinterface.AddExtensionRequest',
                 me.requestHandlers.add
             );
-            sandbox.addRequestHandler(
+            sandbox.requestHandler(
                 'userinterface.RemoveExtensionRequest',
                 me.requestHandlers.remove
             );
-            sandbox.addRequestHandler(
+            sandbox.requestHandler(
                 'userinterface.UpdateExtensionRequest',
                 me.requestHandlers.update
             );
@@ -134,7 +134,7 @@ Oskari.clazz.define('Oskari.userinterface.bundle.ui.UserInterfaceBundleInstance'
                 'Oskari.userinterface.bundle.ui.request.ModalDialogRequestHandler',
                 me
             );
-            sandbox.addRequestHandler(
+            sandbox.requestHandler(
                 'userinterface.ModalDialogRequest',
                 me.requestHandlers.modal
             );
@@ -158,9 +158,9 @@ Oskari.clazz.define('Oskari.userinterface.bundle.ui.UserInterfaceBundleInstance'
          * removes request handlers
          */
         stop: function () {
-            this.sandbox.removeRequestHandler(
+            this.sandbox.requestHandler(
                 'userinterface.UpdateExtensionRequest',
-                this.requestHandlers.update
+                null
             );
 
             this.sandbox.removeRequestHandler(
@@ -408,25 +408,11 @@ Oskari.clazz.define('Oskari.userinterface.bundle.ui.UserInterfaceBundleInstance'
                 } : null,
                 scroll: false,
                 stack: '.oskari-flyout',
-                create: function (event, ui) {
-                    // FIXME don't use jQuery.browser
-                    /* IE9 needs fixed width to not jump flyout width during and after dragging */
-                    if (jQuery.browser && jQuery.browser.msie && jQuery.browser.version[0] === '9') {
-                        flyout.css('width', flyout.width() + 'px');
-                    }
-                },
+                create: function (event, ui) {},
 
                 start: function () {
                     if (useHelper) {
                         flyout.css('display', 'none');
-                    } else {
-                        /* Attempt to fix IE9 vs. draggable flyout width issues */
-                        /* this did not work */
-                        /* if(jQuery.browser.msie && jQuery.browser.version[0] === "9") {
-                        flyout.css('width',flyout.width()+"px");
-                       }
-                       */
-
                     }
                 },
 
@@ -1312,7 +1298,7 @@ Oskari.clazz.define('Oskari.userinterface.bundle.ui.UserInterfaceBundleInstance'
          */
         _toggleMapWindowFullScreen: function () {
             var me = this,
-                reqBuilder = me.sandbox.getRequestBuilder(
+                reqBuilder = Oskari.requestBuilder(
                     'MapFull.MapWindowFullScreenRequest'
                 );
 

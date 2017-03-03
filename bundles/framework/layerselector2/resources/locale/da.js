@@ -10,19 +10,19 @@ Oskari.registerLocalization(
             "generic": "Systemfejl| Prøv venligst igen senere",
             "loadFailed": "Fejl i indlæsning af kortlag| Genindlæs siden i din browser og vælg kortlag",
             "noResults": "Søgningen gav intet resultat",
-            "noResultsForKeyword": "NOT TRANSLATED",
-            "minChars": "NOT TRANSLATED"
+            "noResultsForKeyword": "",
+            "minChars": ""
         },
         "loading": "Indlæser…",
         "filter": {
             "text": "Søg kortlag",
-            "keywordsTitle": "NOT TRANSLATED",
-            "shortDescription": "NOT TRANSLATED",
-            "description": "NOT TRANSLATED",
+            "keywordsTitle": "",
+            "shortDescription": "",
+            "description": "",
             "inspire": "Efter tema",
             "organization": "Efter dataudbydere",
             "published": "Brugere",
-            "didYouMean": "NOT TRANSLATED"
+            "didYouMean": ""
         },
         "published": {
             "organization": "Udgivet kortlag",
@@ -42,6 +42,10 @@ Oskari.registerLocalization(
                 "tooltip": "Kortlaget er ikke tilgængeligt",
                 "iconClass": "backendstatus-down"
             },
+            "ERROR": {
+                "tooltip": "Kortlaget er ikke tilgængeligt",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "Kortlaget vil være lejlighedsvis utilgængeligt i de kommende dage",
                 "iconClass": "backendstatus-maintenance"
@@ -56,14 +60,14 @@ Oskari.registerLocalization(
             }
         },
         "buttons": {
-            "ok": "NOT TRANSLATED"
+            "ok": ""
         },
         "types": {
-            "syn": "NOT TRANSLATED",
-            "lk": "NOT TRANSLATED",
-            "vk": "NOT TRANSLATED",
-            "ak": "NOT TRANSLATED",
-            "yk": "NOT TRANSLATED"
+            "syn": "",
+            "lk": "",
+            "vk": "",
+            "ak": "",
+            "yk": ""
         },
         "layerFilter": {
             "buttons": {
@@ -77,5 +81,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

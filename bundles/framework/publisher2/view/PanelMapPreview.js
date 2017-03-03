@@ -15,7 +15,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
      *       publisher localization data
      * @param {Oskari.mapframework.bundle.publisher2.insatnce} instance the instance
      */
-    function (sandbox, mapmodule, localization, instance) {
+    function (sandbox, mapmodule, localization, instance, tools) {
         var me = this;
         me.loc = localization;
         me.instance = instance;
@@ -51,6 +51,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
         me.selected =  me.sizeOptions.filter(function (option) {
             return option.selected;
         })[0];
+
+        this.tools = tools;
 
         me.panel = null;
         me.modeChangedCB = null;
@@ -146,35 +148,21 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
         },
 
         /**
-         * @private @method _calculateGridWidth
-         * Calculates a sensible width for statsgrid (but doesn't set it...)
+         * @private @method _calculateLeftComponentsWidth
+         * Calculates a sensible width for components on the left panel (but doesn't set it...)
          */
-        _calculateGridWidth: function () {
-            var sandbox = Oskari.getSandbox('sandbox'),
-                columns,
-                width = 160;
-            // TODO: do not reference statsgrid directly...
-            // perhaps save indicators to a service that can be referenced or something
-            // get state of statsgrid
-            var statsGrid = sandbox.getStatefulComponents().statsgrid;
-
-            if (statsGrid &&
-                statsGrid.state &&
-                statsGrid.state.selectedIndicators !== null &&
-                statsGrid.state.selectedIndicators !== undefined) {
-
-                //indicators + municipality (name & code)
-                columns = statsGrid.state.selectedIndicators.length + 2;
-                //grid column width is 80 by default
-                width = columns * 80;
-            }
-            // Width + scroll bar width, but 400 at most.
-            return Math.min((width + 20), 400);
+        _calculateLeftComponentsWidth: function () {
+            var toolsWidth = 0;
+            this.tools.forEach(function(tool) {
+                toolsWidth = toolsWidth + (tool.getAdditionalSize().width || 0);
+            });
+            // Width, but 400 at most.
+            return Math.min(toolsWidth, 400);
         },
 
         /**
          * @private @method _adjustDataContainer
-         * This horrific thing is what sets the statsgrid, container and map size.
+         * This horrific thing is what sets the left panel components, container and map size.
          */
         _adjustDataContainer: function () {
             var me = this,
@@ -183,15 +171,14 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
                 content = jQuery('#contentMap'),
                 container = content.find('.row-fluid'),
                 dataContainer = container.find('.oskariui-left'),
-                gridWidth = me._calculateGridWidth(),
-                gridHeight = 0,
                 mapContainer = container.find('.oskariui-center'),
                 mapDiv = me.mapmodule.getMapEl(),
                 mapWidth,
                 mapHeight,
                 totalWidth = size.width,
                 totalHeight = size.height,
-                statsContainer = jQuery('.publishedgrid');
+                leftPanelWidth = me._calculateLeftComponentsWidth(),
+                hasLeftComps = leftPanelWidth > 0;
 
             if (totalWidth === null || totalWidth === undefined || totalWidth === '') {
                 if(!container.length) {
@@ -205,44 +192,31 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
                 totalHeight = jQuery(window).height();
             }
 
-            dataContainer.toggleClass('oskari-closed', !me.isDataVisible);
-
-            if (statsContainer.length>0) {
+            if (hasLeftComps) {
                 dataContainer.removeClass('oskari-closed');
-                gridHeight = totalHeight;
             } else {
                 dataContainer.addClass('oskari-closed');
-                gridWidth = 0;
             }
 
-            mapWidth = (totalWidth - gridWidth) + 'px';
+            mapWidth = (totalWidth - leftPanelWidth) + 'px';
             mapHeight = totalHeight + 'px';
-            gridWidth = gridWidth + 'px';
-            gridHeight = gridHeight + 'px';
-
+            leftPanelWidth = leftPanelWidth + 'px';
             dataContainer.css({
-                'width': gridWidth,
-                'height': gridHeight,
-                'float': 'left'
-            }).addClass('published-grid-left');
-
+                'width': leftPanelWidth,
+                'height': totalHeight
+            });
+            if (hasLeftComps) {
+                // this is usually statsgrid
+                dataContainer.children().height(mapHeight);
+            }
             mapContainer.css({
                 'width': mapWidth,
-                'height': mapHeight,
-                'float': 'left'
-            }).addClass('published-grid-center');
+                'height': mapHeight
+            });
 
             mapDiv.width(mapWidth);
             mapDiv.height(mapHeight);
 
-            if (statsContainer.length>0) {
-                statsContainer.height(mapHeight);
-            }
-
-            // TODO grid plugin?
-            if (me.gridPlugin) {
-                me.gridPlugin.setGridHeight();
-            }
             // notify map module that size has changed
             me._updateMapModuleSize();
         },
@@ -255,12 +229,9 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
 
             //turn off event handlers in order to avoid consecutive calls to mapsizechanged
             this._unregisterEventHandlers();
-            var me = this,
-                reqBuilder = me.sandbox.getRequestBuilder(
-                    'MapFull.MapSizeUpdateRequest'
-                );
-            if (reqBuilder) {
-                me.sandbox.request(me.instance, reqBuilder());
+            var me = this;
+            if (me.sandbox.hasHandler('MapFull.MapSizeUpdateRequest')) {
+                me.sandbox.request(me.instance, Oskari.requestBuilder('MapFull.MapSizeUpdateRequest')());
             }
 
             me._updateMapMode();
@@ -329,7 +300,7 @@ Oskari.clazz.define('Oskari.mapframework.bundle.publisher2.view.PanelMapPreview'
          */
         _validateNumberRange: function (value, min, max) {
             var ret = true;
-
+            // FIXME : use Oskari.util.???
             if (isNaN(parseInt(value, 10))) {
                 ret = false;
             } else if (!isFinite(value)) {

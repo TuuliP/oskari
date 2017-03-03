@@ -24,7 +24,16 @@ Oskari.clazz.define("Oskari.statistics.statsgrid.StatsGridBundle",
                 "src": "../../../bundles/statistics/statsgrid2016/instance.js"
             }, {
                 "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/Flyout.js"
+            }, {
+                "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/service/StatisticsService.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/service/ClassificationService.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/service/ColorService.js"
             }, {
                 "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/service/StateService.js"
@@ -33,31 +42,66 @@ Oskari.clazz.define("Oskari.statistics.statsgrid.StatsGridBundle",
                 "src": "../../../bundles/statistics/statsgrid2016/service/Cache.js"
             }, {
                 "type": "text/javascript",
-                "src": "../../../bundles/statistics/statsgrid2016/GridModeView.js"
-            }, {
-                "type": "text/javascript",
-                "src": "../../../bundles/statistics/statsgrid2016/StatsView.js"
-            }, {
-                "type": "text/javascript",
-                "src": "../../../bundles/statistics/statsgrid2016/components/RegionsetSelection.js"
-            }, {
-                "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/components/IndicatorSelection.js"
             }, {
                 "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/components/IndicatorParameters.js"
             }, {
                 "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/components/RegionsetSelector.js"
+            }, {
+                "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/components/Datatable.js"
             }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/components/ExtraFeatures.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/plugin/TogglePlugin.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/components/Legend.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/components/EditClassification.js"
+            },
+            {
                 "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/event/IndicatorEvent.js"
             }, {
                 "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/event/DatasourceEvent.js"
+            }, {
+                "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/event/RegionsetChangedEvent.js"
             }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/event/ActiveIndicatorChangedEvent.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/event/RegionSelectedEvent.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/event/ClassificationChangedEvent.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/publisher/StatsTableTool.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/publisher/ClassificationTool.js"
+            }, {
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/plugin/ClassificationToolPlugin.js"
+            },{
                 "type": "text/css",
                 "src": "../../../bundles/statistics/statsgrid2016/resources/css/style.css"
+            }, {
+                "type" : "text/javascript",
+                "expose" : "geostats",
+                "src" : "../../../libraries/geostats/1.5.0/lib/geostats.min.js"
+            }, {
+                "type": "text/css",
+                "src" : "../../../libraries/geostats/1.5.0/lib/geostats.css"
             }, {
                 "src": "../../../libraries/chosen/1.5.1/chosen.jquery.js",
                 "type": "text/javascript"
@@ -73,6 +117,10 @@ Oskari.clazz.define("Oskari.statistics.statsgrid.StatsGridBundle",
                 "lang": "en",
                 "type": "text/javascript",
                 "src": "../../../bundles/statistics/statsgrid2016/resources/locale/en.js"
+            }, {
+                "lang": "sv",
+                "type": "text/javascript",
+                "src": "../../../bundles/statistics/statsgrid2016/resources/locale/sv.js"
             }]
         },
         "bundle": {

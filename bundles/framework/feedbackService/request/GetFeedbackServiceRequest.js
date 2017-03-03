@@ -2,7 +2,7 @@
  * @class Oskari.mapframework.bundle.feedbackService.request.GetFeedbackServiceRequest
  * Requests feedback service list with given params
  *
- * Requests are build and sent through Oskari.mapframework.sandbox.Sandbox.
+ * Requests are build and sent through Oskari.Sandbox.
  * Oskari.mapframework.request.Request superclass documents how to send one.
  */
 Oskari.clazz.define('Oskari.mapframework.bundle.feedbackService.request.GetFeedbackServiceRequest',
@@ -13,8 +13,8 @@ Oskari.clazz.define('Oskari.mapframework.bundle.feedbackService.request.GetFeedb
      * @params {Object} lang, serviceId
      *
      */
-    function(params) {
-        this._feedbackparams = params;
+    function(serviceId) {
+        this.serviceId = serviceId;
     }, {
         /** @static @property __name request name */
         __name : "GetFeedbackServiceRequest",
@@ -30,7 +30,15 @@ Oskari.clazz.define('Oskari.mapframework.bundle.feedbackService.request.GetFeedb
          * @return {Object} parameters of current feedback request
          */
         getFeedbackParams : function() {
-            return this._feedbackparams;
+            if(!this.serviceId) {
+                return {
+                    "method" : "serviceList"
+                };
+            }
+            return {
+                "method" : "serviceDefinition",
+                "serviceId": this.serviceId
+            };
         }
     }, {
         /**

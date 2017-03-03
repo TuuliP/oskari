@@ -32,7 +32,7 @@ Oskari.registerLocalization(
             "type-base": "Hintergrundkarte",
             "type-wms": "Kartenebene (WMS, WMTS)",
             "type-wfs": "Datenprodukt (WFS)",
-            "type-wfs-manual": "NOT TRANSLATED"
+            "type-wfs-manual": ""
         },
         "backendStatus": {
             "OK": {
@@ -42,6 +42,10 @@ Oskari.registerLocalization(
             "DOWN": {
                 "tooltip": "Die Kartenebene ist derzeit nicht verfügbar.",
                 "iconClass": "backendstatus-down"
+            },
+            "ERROR": {
+                "tooltip": "Die Kartenebene ist derzeit nicht verfügbar.",
+                "iconClass": "backendstatus-error"
             },
             "MAINTENANCE": {
                 "tooltip": "Die Kartenebene könnte in den nächsten Tagen teilweise nicht verfügbar sein.",
@@ -78,5 +82,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

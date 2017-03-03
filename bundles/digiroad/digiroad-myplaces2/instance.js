@@ -28,7 +28,7 @@ function() {
     },
     /**
      * @method getSandbox
-     * @return {Oskari.mapframework.sandbox.Sandbox}
+     * @return {Oskari.Sandbox}
      */
     getSandbox : function() {
         return this.sandbox;
@@ -130,7 +130,7 @@ function() {
     start : function() {
 
         // Should this not come as a param?
-        var sandbox = Oskari.$('sandbox');
+        var sandbox = Oskari.getSandbox();
         this.sandbox = sandbox;
 
         var me = this;
@@ -140,7 +140,7 @@ function() {
         this.buttons = Oskari.clazz.create("Oskari.digiroad.bundle.myplaces2.ButtonHandler", this);
         this.buttons.start();
 
-        var user = sandbox.getUser();
+        var user = Oskari.user();
         if(!user.isLoggedIn()) {
             // guest users don't need anything else
             return;

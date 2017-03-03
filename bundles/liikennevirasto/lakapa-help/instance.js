@@ -50,7 +50,7 @@ Oskari.clazz.define("Oskari.liikennevirasto.bundle.lakapa.HelpFlyoutBundleInstan
 
 		/* sandbox */
 		var sandboxName = ( conf ? conf.sandbox : null ) || 'sandbox' ;
-		var sandbox = Oskari.$(sandboxName);
+		var sandbox = Oskari.getSandbox(sandboxName);
         me.sandbox = sandbox;
 
         // register to sandbox as a module
@@ -120,26 +120,7 @@ Oskari.clazz.define("Oskari.liikennevirasto.bundle.lakapa.HelpFlyoutBundleInstan
 	 * @static
 	 *
 	 */
-	eventHandlers : {
-		'AfterMapLayerAddEvent' : function(event) {
-			/* this might react when layer added */
-			/* this.scheduleShowMetadata(event.getMapLayer().getMetadataResourceUUID(); */
-		},
-		/**
-		 * @method AfterMapLayerRemoveEvent
-		 */
-		'AfterMapLayerRemoveEvent' : function(event) {
-			/* this might react when layer removed */
-			/* this.scheduleShowMetadata(event.getMapLayer().getMetadataResourceUUID(); */
-		},
-		/**
-		 * @method AfterMapLayerRemoveEvent
-		 */
-		'AfterMapMoveEvent' : function(event) {
-			/* this might react when map moved */
-
-		}
-	},
+	eventHandlers : {},
 
 	/**
 	 * @method stop

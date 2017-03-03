@@ -25,9 +25,8 @@ Oskari.clazz.define(
             layerId: null
         };
     }, {
-        afterStart: function (sandbox) {
+        _addRequestHandlers: function(sandbox){
             var me = this;
-
             var tooltipRequestHandler = Oskari.clazz.create(
                 'Oskari.statistics.bundle.statsgrid.request.TooltipContentRequestHandler',
                 me
@@ -45,12 +44,21 @@ Oskari.clazz.define(
                 'StatsGrid.IndicatorsRequest',
                 indicatorRequestHandler
             );
+        },
+        afterStart: function (sandbox) {
+            var me = this;
 
-            var locale = me.getLocalization(),
-                mapModule = sandbox.findRegisteredModuleInstance(
-                    'MainMapModule'
-                );
-            me.mapModule = mapModule;
+            var tile = this.plugins['Oskari.userinterface.Tile'];
+            var cel = tile.container;
+
+            if (!cel.hasClass('statsgrid')) {
+                cel.addClass('statsgrid');
+            }
+
+            me._addRequestHandlers(sandbox);
+
+            var locale = me.getLocalization();
+            me.mapModule = sandbox.findRegisteredModuleInstance('MainMapModule');
 
             // create the StatisticsService for handling ajax calls
             // and common functionality.
@@ -104,8 +112,8 @@ Oskari.clazz.define(
                 gridConf,
                 locale
             );
-            mapModule.registerPlugin(gridPlugin);
-            mapModule.startPlugin(gridPlugin);
+            me.mapModule.registerPlugin(gridPlugin);
+            me.mapModule.startPlugin(gridPlugin);
             me.gridPlugin = gridPlugin;
 
             // Register classification plugin for map.
@@ -116,8 +124,8 @@ Oskari.clazz.define(
                 },
                 locale
             );
-            mapModule.registerPlugin(classifyPlugin);
-            mapModule.startPlugin(classifyPlugin);
+            me.mapModule.registerPlugin(classifyPlugin);
+            me.mapModule.startPlugin(classifyPlugin);
             me.classifyPlugin = classifyPlugin;
 
             var dataSourceRequestHandler = Oskari.clazz.create(
@@ -141,7 +149,7 @@ Oskari.clazz.define(
                 return;
             }
             var locale = this.getLocalization();
-            if (this.sandbox.getUser().isLoggedIn()) {
+            if (Oskari.user().isLoggedIn()) {
                 var userIndicatorsTab = Oskari.clazz.create(
                     'Oskari.statistics.bundle.statsgrid.UserIndicatorsTab',
                     this, locale.tab
@@ -169,6 +177,10 @@ Oskari.clazz.define(
                 var isShown = event.getViewState() !== 'close';
                 view.prepareMode(isShown, null, true);
             },
+            'UIChangeEvent' : function() {
+                // tear down when receiving the event
+                this.getView().prepareMode(false);
+            },
             /**
              * @method MapStats.StatsVisualizationChangeEvent
              */
@@ -178,7 +190,7 @@ Oskari.clazz.define(
             /**
              * @method AfterMapMoveEvent
              */
-            AfterMapMoveEvent: function (event) {
+            AfterMapMoveEvent: function () {
                 var view = this.getView();
                 if (view.isVisible && view._layer) {
                     this._createPrintParams(view._layer);
@@ -192,7 +204,7 @@ Oskari.clazz.define(
              * @param {Oskari.mapframework.event.common.MapLayerEvent} event
              *
              */
-            MapLayerEvent: function (event) {
+            MapLayerEvent: function () {
                 // Enable tile when stats layer is available
                 this._enableTile();
             }
@@ -201,9 +213,36 @@ Oskari.clazz.define(
         _enableTile: function () {
             var layerPresent = this._isLayerPresent(),
                 tile = this.plugins['Oskari.userinterface.Tile'];
-            if (layerPresent && tile) {
+            if (layerPresent && !tile.isEnabled()) {
                 tile.enable();
+                // add tool needs to be called AFTER tile.enable() or we go infinite
+                this.__addTool(this.getLayer());
             }
+        },
+        /**
+         * Adds the Feature data tool for layer
+         * @param  {String| Number} layerId layer to process
+         * @param  {Boolean} suppressEvent true to not send event about updated layer (optional)
+         */
+        __addTool : function(layerModel, suppressEvent) {
+            var me = this;
+            if(!layerModel || !layerModel.isLayerOfType('STATS')) {
+                return;
+            }
+
+            // add feature data tool for layer
+            var layerLoc = this.getLocalization('layertools') || {},
+                label = layerLoc.title || 'Thematic maps',
+                tool = Oskari.clazz.create('Oskari.mapframework.domain.Tool');
+            tool.setName("table_icon");
+            tool.setTitle(label);
+            tool.setTooltip(layerLoc.tooltip || label);
+            tool.setCallback(function () {
+                me.sandbox.postRequestByName('StatsGrid.StatsGridRequest', [true, layerModel]);
+            });
+
+            var service = this.sandbox.getService('Oskari.mapframework.service.MapLayerService');
+            service.addToolForLayer(layerModel, tool, suppressEvent);
         },
 
         isLayerVisible: function () {
@@ -212,19 +251,24 @@ Oskari.clazz.define(
             ret = layer !== null && layer !== undefined;
             return ret;
         },
-
-        _isLayerPresent: function () {
+        getLayer: function () {
             var service = this.sandbox.getService('Oskari.mapframework.service.MapLayerService');
             if (this.conf && this.conf.defaultLayerId) {
                 var layer = service.findMapLayer(this.conf.defaultLayerId);
-                return (layer !== null && layer !== undefined && layer.isLayerOfType('STATS'));
+                if (layer && layer.isLayerOfType('STATS')) {
+                    return layer;
+                }
             }
             var layers = service.getLayersOfType('STATS');
             if (layers && layers.length > 0) {
                 this.conf.defaultLayerId = layers[0].getId();
-                return true;
+                return layers[0];
             }
-            return false;
+            return null;
+        },
+
+        _isLayerPresent: function () {
+            return !!this.getLayer();
         },
 
         /**
@@ -288,9 +332,8 @@ Oskari.clazz.define(
          *
          * @method setState
          * @param {Object} state bundle state as JSON
-         * @param {Boolean} ignoreLocation true to NOT set map location based on state
          */
-        setState: function (state, ignoreLocation) {
+        setState: function (state) {
             this.state = jQuery.extend({}, {
                 indicators: [],
                 layerId: null
@@ -335,11 +378,8 @@ Oskari.clazz.define(
                 state = me.state;
 
             // If there's no view or it's not visible, nothing to do here!
-            if (!view || !view.isVisible) {
-                return null;
-            }
-            // If the state is null or an empty object, nothing to do here!
-            if (!state || jQuery.isEmptyObject(state)) {
+            // Or if the state is null or an empty object, nothing to do here!
+            if (!view || !view.isVisible || !state || jQuery.isEmptyObject(state)) {
                 return null;
             }
 

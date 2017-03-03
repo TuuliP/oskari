@@ -15,22 +15,30 @@ Oskari.registerLocalization(
                 "title": "Coordinates",
                 "searchButton": "Center map",
                 "addMarkerButton": "Add marker",
-                "info": "Click a location on the map to view the coordinates or enter coordinates and click 'Center map'.",
+                "info": "Type coordinates or click a point on the map.",
                 "showMouseCoordinates": "Show mouse cursor coordinates"
             },
             "compass": {
-                "lon": "E / lon:",
-                "lat": "N / lat:"
+                "lon": "Lon",
+                "lat": "Lat",
+                "n": "N",
+                "e": "E",
+                "p": "N",
+                "i": "E"
             },
             "reversegeocode": {
                 "errorTitle": "Reverse geocoding error",
                 "error": "Error to get reverse geocode for the current position",
                 "WHAT3WORDS_CHANNEL": {
-                    "label": "What3words: "
+                    "label": "what3words: "
                 },
                 "NLS_NEAREST_FEATURE_CHANNEL": {
                     "label": "Address: "
-                }
+                },
+                "TM35LEHTIJAKO_CHANNEL": {
+                    "label": "Map sheet: "
+                },
+                "moreInfo": "Show more info on current position."
             },
             "tooltip": {
                 "tool": "Show coordinates or type coordinates and focus map on them.",
@@ -43,7 +51,7 @@ Oskari.registerLocalization(
             },
             "projectionChange": {
                 "header": "Change projection",
-                "projection":"Projection",
+                "projection": "Projection",
                 "confirmationMessage": "Changing the projection will return the application to it's initial state and all opened maplayers will be removed. Do you wish to continue?",
                 "buttons": {
                     "ok": "OK",
@@ -53,34 +61,38 @@ Oskari.registerLocalization(
             "coordinatesTransform": {
                 "header": "Coordinate system:",
                 "projections": {
-                   "EPSG:3067": "ETRS-TM35FIN coordinates",
-                   "NLSFI:etrs_gk": "ETRS-GKn coordinates",
-                   "NLSFI:kkj": "KKJ Basic Coordinate System",
-                   "NLSFI:ykj": "KKJ Uniform Coordinate System",
-                   "EPSG:4258": "ETRS89 geographic (~WGS84)",
-                   "LATLON:kkj": "KKJ geographic",
-                   "EPSG:3046": "ETRS-TM34",
-                   "EPSG:3048": "ETRS-TM36",
-                   "EPSG:3873": "ETRS-GK19",
-                   "EPSG:3874": "ETRS-GK20",
-                   "EPSG:3875": "ETRS-GK21",
-                   "EPSG:3876": "ETRS-GK22",
-                   "EPSG:3877": "ETRS-GK23",
-                   "EPSG:3878": "ETRS-GK24",
-                   "EPSG:3879": "ETRS-GK25",
-                   "EPSG:3880": "ETRS-GK26",
-                   "EPSG:3881": "ETRS-GK27",
-                   "EPSG:3882": "ETRS-GK28",
-                   "EPSG:3883": "ETRS-GK29",
-                   "EPSG:3884": "ETRS-GK30",
-                   "EPSG:3885": "ETRS-GK31",
-                   "EPSG:3386": "KKJ zone 0",
-                   "EPSG:2391": "KKJ zone 1",
-                   "EPSG:2392": "KKJ zone 2",
-                   "EPSG:2394": "KKJ zone 4"
-                }
+                    "EPSG:3067": "ETRS-TM35FIN coordinates",
+                    "NLSFI:etrs_gk": "ETRS-GKn coordinates",
+                    "NLSFI:kkj": "KKJ Basic Coordinate System",
+                    "NLSFI:ykj": "KKJ Uniform Coordinate System",
+                    "EPSG:4258": "ETRS89 geographic (~WGS84)",
+                    "LATLON:kkj": "KKJ geographic",
+                    "EPSG:3046": "ETRS-TM34",
+                    "EPSG:3048": "ETRS-TM36",
+                    "EPSG:3873": "ETRS-GK19",
+                    "EPSG:3874": "ETRS-GK20",
+                    "EPSG:3875": "ETRS-GK21",
+                    "EPSG:3876": "ETRS-GK22",
+                    "EPSG:3877": "ETRS-GK23",
+                    "EPSG:3878": "ETRS-GK24",
+                    "EPSG:3879": "ETRS-GK25",
+                    "EPSG:3880": "ETRS-GK26",
+                    "EPSG:3881": "ETRS-GK27",
+                    "EPSG:3882": "ETRS-GK28",
+                    "EPSG:3883": "ETRS-GK29",
+                    "EPSG:3884": "ETRS-GK30",
+                    "EPSG:3885": "ETRS-GK31",
+                    "EPSG:3386": "KKJ zone 0",
+                    "EPSG:2391": "KKJ zone 1",
+                    "EPSG:2392": "KKJ zone 2",
+                    "EPSG:2394": "KKJ zone 4"
+                },
+                "emergencyCallLabel": "The coordinates recommended to be used in emergency calls are",
+                "emergencyCallLabelAnd": "and",
+                "showCoordinateFormatDisplay": "Show coordinates &raquo;",
+                "showInputValues": "&laquo; Input values"
             },
-            "cannotTransformCoordinates" : {
+            "cannotTransformCoordinates": {
                 "title": "Error",
                 "message": "Coordinates cannot transformed"
             },
@@ -90,5 +102,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

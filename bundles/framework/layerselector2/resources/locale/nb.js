@@ -43,17 +43,21 @@ Oskari.registerLocalization(
                 "tooltip": "Kartlaget er for tiden utilgjengelig",
                 "iconClass": "backendstatus-nede"
             },
+            "ERROR": {
+                "tooltip": "Kartlaget er for tiden utilgjengelig",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "Kartlaget kan være midlertidig utilgjengelig de nærmeste dagene",
                 "iconClass": "backendstatus-vedlikehold"
             },
             "UNKNOWN": {
                 "tooltip": "",
-                "iconClass": "backendstatus-unknown"
+                "iconClass": "backendstatus-ukjent"
             },
             "UNSTABLE": {
                 "tooltip": "",
-                "iconClass": "backendstatus-unstable"
+                "iconClass": "backendstatus-ustabil"
             }
         },
         "buttons": {
@@ -68,15 +72,14 @@ Oskari.registerLocalization(
         },
         "layerFilter": {
             "buttons": {
-                "newest": "Newest",
-                "stats": "Vector layers"
+                "newest": "Nyeste",
+                "stats": "Vektorlag"
             },
             "tooltips": {
-                "newest": "Show ## newest map layers",
-                "stats": "Show only vector layers",
-                "remove": "Remove filter"
+                "newest": "Vis ## nyeste kartlag",
+                "stats": "Vis bare vektorlag",
+                "remove": "Ta bort filter"
             }
         }
     }
-}
-);
+});

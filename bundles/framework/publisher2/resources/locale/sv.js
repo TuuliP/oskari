@@ -3,10 +3,10 @@ Oskari.registerLocalization(
     "lang": "sv",
     "key": "Publisher2",
     "value": {
-        "tile" : {
+        "tile": {
             "title": "Kartpublicering"
         },
-        "flyout" : {
+        "flyout": {
             "title": "Skapa inbäddad karta"
         },
         "published": {
@@ -31,8 +31,7 @@ Oskari.registerLocalization(
             "name": {
                 "label": "Kartans namn",
                 "placeholder": "obligatorisk uppgift",
-                "tooltip": "Välj ett språk på kartan. Språket användas på användargänsnitt och text på kartan. Obs! Valt språk visas inte på förhandsvisningskartan.",
-                "languageChangedDisclaimer":"Obs! Valt språk visas inte på förhandsvisningskartan."
+                "tooltip": "Välj ett språk på kartan. Språket användas på användargänsnitt och text på kartan. Obs! Valt språk visas inte på förhandsvisningskartan."
             },
             "language": {
                 "label": "Språk",
@@ -61,9 +60,10 @@ Oskari.registerLocalization(
                 "GetInfoPlugin": "Verktyg för förfrågan som gäller uppgifter om objektet",
                 "PublisherToolbarPlugin": "Kartverktyg",
                 "selectDrawLayer": "Välj lager för nya funktioner",
-                "LayerSelectionPlugin":"Kartlagren meny",
+                "LayerSelectionPlugin": "Kartlagren meny",
                 "CoordinateToolPlugin": "Koordinat verktyg",
-                "CrosshairTool":"Visa kartans mittpunkt",
+                "FeedbackServiceTool": "Feedback (Open311) functionality",
+                "CrosshairTool": "Visa kartans mittpunkt",
                 "toolbarToolNames": {
                     "history_back": "Gå bakåt",
                     "history_forward": "Gå framåt",
@@ -244,5 +244,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

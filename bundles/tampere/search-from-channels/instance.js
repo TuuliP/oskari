@@ -118,7 +118,7 @@ Oskari.clazz.define(
         },
         /**
          * @method setSandbox
-         * @param {Oskari.mapframework.sandbox.Sandbox} sandbox
+         * @param {Oskari.Sandbox} sandbox
          * Sets the sandbox reference to this component
          */
         setSandbox: function (sandbox) {
@@ -126,7 +126,7 @@ Oskari.clazz.define(
         },
         /**
          * @method getSandbox
-         * @return {Oskari.mapframework.sandbox.Sandbox}
+         * @return {Oskari.Sandbox}
          */
         getSandbox: function () {
             return this.sandbox;
@@ -181,14 +181,14 @@ Oskari.clazz.define(
             if (me.conf && me.conf.optionUrl) {
                 optionAjaxUrl = me.conf.optionUrl;
             } else {
-                optionAjaxUrl = sandbox.getAjaxUrl() + 'action_route=SearchWFSChannel';
+                optionAjaxUrl = sandbox.getAjaxUrl() + 'action_route=SearchOptions';
             }
 
             var searchAjaxUrl = null;
             if (me.conf && me.conf.searchUrl) {
                 searchAjaxUrl = me.conf.searchUrl;
             } else {
-                searchAjaxUrl = sandbox.getAjaxUrl() + 'action_route=GetWfsSearchResult';
+                searchAjaxUrl = sandbox.getAjaxUrl() + 'action_route=GetSearchResult';
             }
 
             // Default tab priority
@@ -339,7 +339,7 @@ Oskari.clazz.define(
             field.setIds('oskari_searchfromchannels_forminput', 'oskari_searchfromchannels_forminput_searchassistance');
 
             field.bindChange(function (event) {
-                if (me.state === null) {
+                if (!me.state) {
                     me.state = {};
                 }
                 var value = field.getValue();
@@ -381,7 +381,7 @@ Oskari.clazz.define(
 
                 me.optionPanel.find("input[name='channelChkBox']").each( function () {
                     if(jQuery(this).is(":checked")){
-                        channelIds.push(parseInt(jQuery(this).val()));
+                        channelIds.push(jQuery(this).val());
                     }
                 });
 
@@ -741,7 +741,7 @@ Oskari.clazz.define(
          */
         toggleParentFlyout: function(optionPanel, searchResultWindow, mapDiv){
             var me = this;
-            var menuBtn = jQuery('#oskari_search_tile_title').parent();
+            var menuBtn = jQuery('.search').parent();
             if(optionPanel.parents('.oskari-flyout').is(':visible')){
                 optionPanel.parents('.oskari-flyout').removeClass('oskari-attached').addClass('oskari-closed');
                 menuBtn.removeClass('oskari-tile-attached"').addClass('oskari-tile-closed');
@@ -865,7 +865,7 @@ Oskari.clazz.define(
             bounds = olLayer.getDataExtent();
             center = bounds.getCenterLonLat();
 
-            mapmoveRequest = me.sandbox.getRequestBuilder('MapMoveRequest')(center.lon, center.lat, bounds, false);
+            mapmoveRequest = me.sandbox.getRequestBuilder('MapMoveRequest')(center.lon, center.lat, bounds);
             me.sandbox.request(me, mapmoveRequest);
 
             }else{
@@ -932,12 +932,12 @@ Oskari.clazz.define(
             var moveReqBuilder = sandbox.getRequestBuilder('MapMoveRequest'),
                 zoom = result.zoomLevel;
             if(result.zoomScale) {
-                var zoom = {scale : result.zoomScale};
+                 zoom = {scale : result.zoomScale};
             }
 
            sandbox.request(
                 me.getName(),
-                moveReqBuilder(result.lon, result.lat, zoom, false)
+                moveReqBuilder(result.lon, result.lat, zoom)
             );
 
             if(drawVector){
@@ -945,29 +945,23 @@ Oskari.clazz.define(
                 sandbox.postRequestByName(rn, [result.GEOMETRY, 'WKT', {id:result.id}, null, 'replace', true, me._getVectorLayerStyle(), false]);
             }
 
-            var loc = me.getLocalization('resultBox'),
-                resultActions = {},
-                action;
-            for (var name in this.resultActions) {
-                if (this.resultActions.hasOwnProperty(name)) {
-                    action = this.resultActions[name];
-                    resultActions[name] = action(result);
+            var loc = me.getLocalization('resultBox');
+
+            var content = [
+                {
+                    html: '<h3>' + result.name + '</h3>' + '<p>' + result.village + '<br/>' + result.type + '</p>',
+                    actions: [{
+                        name: loc.close,
+                        type: 'link',
+                        action: function(){
+                            var rN = 'InfoBox.HideInfoBoxRequest',
+                                rB = sandbox.getRequestBuilder(rN),
+                                request = rB(popupId);
+                            sandbox.request(me.getName(), request);
+                        }
+                    }]
                 }
-            }
-
-            var contentItem = {
-                html: '<h3>' + result.name + '</h3>' + '<p>' + result.village + '<br/>' + result.type + '</p>',
-                actions: resultActions
-            };
-            var content = [contentItem];
-
-            /* impl smashes action key to UI - we'll have to localize that here */
-            contentItem.actions[loc.close] = function () {
-                var rN = 'InfoBox.HideInfoBoxRequest',
-                    rB = sandbox.getRequestBuilder(rN),
-                    request = rB(popupId);
-                sandbox.request(me.getName(), request);
-            };
+            ];
 
             var options = {
                 hidePrevious: true
@@ -1021,8 +1015,8 @@ Oskari.clazz.define(
         * @private
         */
         _sortAdvanced: function(a, b){
-            var topicA = a.topic[Oskari.getLang()];
-            var topicB = b.topic[Oskari.getLang()];
+            var topicA = a.locale.name;
+            var topicB = b.locale.name;
             if(topicA === null){
                 topicA = '';
             }
@@ -1075,15 +1069,13 @@ Oskari.clazz.define(
             for (i = 0; i < dataFields.length; i += 1) {
                 dataField = dataFields[i];
 
-                value = dataField["wfsId"];
-                text = dataField.topic[Oskari.getLang()];
+                value = dataField.id;
+                text = dataField.locale.name;
                 newCheckbox = me.templates.checkbox.clone();
                 newCheckboxDef = newCheckbox.find(':checkbox');
                 newCheckboxDef.attr('name', "channelChkBox");
-                newCheckboxDef.attr('value', dataField["id"]);
-                if(dataField["is_default"]){
-                    newCheckboxDef.attr('checked', true);
-                }
+                newCheckboxDef.attr('value', dataField.id);
+                newCheckboxDef.attr('checked', !!dataField.isDefault);
                 newCheckbox.find('label.searchFromChannelsTypeText').append(text);
                 newRow.find('.checkboxes').append(newCheckbox);
 

@@ -28,10 +28,15 @@ Oskari.registerLocalization(
             "fuzzyResultsTitle": "Ónákvæmar niðurstöður",
             "filterResultsTitle": "Niðurstöður úr svæðissíu",
             "countryFilter": "Veldu land",
+            "locationFilter": "",
+            "namelangFilter": "",
             "backButton": "Til baka",
             "geolocButton": "Finndu næsta stað",
             "geolocDesc": "Smelltu á kortið og finndu örnefnið sem er næst staðnum.",
             "noResults": "Engar leitarniðurstöður",
+            "showMore": "Sýna leitarvalkosti",
+            "showLess": "Fela leitarvalkosti",
+            "emptyOption": "* Ekkert valið *",
             "errors": {
                 "searchTermMissing": "Leitarorð nauðsynlegt",
                 "searchFailed": "Leit mistókst. Vinsamlegast reyndu aftur síðar."
@@ -43,5 +48,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

@@ -28,12 +28,17 @@ Oskari.registerLocalization(
             "fuzzyResultsTitle": "Hrubé výsledky vyhľadávania",
             "filterResultsTitle": "Výsledky filtra rozsahu",
             "countryFilter": "vybrať krajinu",
+            "locationFilter": "",
+            "namelangFilter": "",
             "backButton": "Späť",
             "geolocButton": "Nájsť najbližšie miesto",
             "geolocDesc": "Kliknite na mapu a nájdite najbližší názov miesta k danému miestu",
             "noResults": "Nenašiel sa výsledok vyhľadávania",
+            "showMore": "Ukázať možnosti vyhľadávania.",
+            "showLess": "Skryť možnosti vyhľadávania.",
+            "emptyOption": "* Žiadny výber *",
             "errors": {
-                "searchTermMissing": "Vyskytla sa chyba. Hľadaný výraz sa vyžaduje. Napíšte ho a skúste znova.",
+                "searchTermMissing": "Vyskytla sa chyba. Zadajte hľadaný výraz Napíšte ho a skúste znova.",
                 "searchFailed": "Vyskytla sa chyba. Vyhľadávanie sa nedá uskutočniť."
             },
             "grid": {
@@ -43,5 +48,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

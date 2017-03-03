@@ -10,19 +10,19 @@ Oskari.registerLocalization(
             "generic": "Համակարգի սխալ/ փորձեք ավելի ուշ",
             "loadFailed": "Քարտեզի շերտերը ներբեռնելու սխալ/ կրկին բեռնել էջը և ընտրել քարտեզի շերտը",
             "noResults": "Ապարդյուն որոնում",
-            "noResultsForKeyword": "NOT TRANSLATED",
-            "minChars": "NOT TRANSLATED"
+            "noResultsForKeyword": "",
+            "minChars": ""
         },
         "loading": "Ներբեռնում",
         "filter": {
             "text": "Քարտեզի շերտի որոնում",
-            "keywordsTitle": "NOT TRANSLATED",
-            "shortDescription": "NOT TRANSLATED",
-            "description": "NOT TRANSLATED",
+            "keywordsTitle": "",
+            "shortDescription": "",
+            "description": "",
             "inspire": "Թեմայով",
             "organization": "Տվյալների պրովայդերով",
             "published": "Օգտագործողներով",
-            "didYouMean": "NOT TRANSLATED"
+            "didYouMean": ""
         },
         "published": {
             "organization": "Հրապարակված քարտեզի շերտ",
@@ -42,6 +42,10 @@ Oskari.registerLocalization(
                 "tooltip": "Քարտեզի շերտը ժամանակավորապես անհասանելի է",
                 "iconClass": "backendstatus-down"
             },
+            "ERROR": {
+                "tooltip": "Քարտեզի շերտը ժամանակավորապես անհասանելի է",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "Քարտեզի շերտը պարբերաբար անհասանելի կլինի հաջորդ մի քանի օրվա ընթացքում",
                 "iconClass": "backendstatus-maintenance"
@@ -56,14 +60,14 @@ Oskari.registerLocalization(
             }
         },
         "buttons": {
-            "ok": "NOT TRANSLATED"
+            "ok": ""
         },
         "types": {
-            "syn": "NOT TRANSLATED",
-            "lk": "NOT TRANSLATED",
-            "vk": "NOT TRANSLATED",
-            "ak": "NOT TRANSLATED",
-            "yk": "NOT TRANSLATED"
+            "syn": "",
+            "lk": "",
+            "vk": "",
+            "ak": "",
+            "yk": ""
         },
         "layerFilter": {
             "buttons": {
@@ -77,5 +81,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

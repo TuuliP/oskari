@@ -252,6 +252,7 @@ Oskari.clazz.define(
                 okButton = dialog.createCloseButton('OK');
 
             dialog.setId('oskari_search_error_popup');
+            dialog.makeModal();
 
             dialog.show(
                     this.instance.getLocalization('searchservice_search_alert_title'),
@@ -382,7 +383,7 @@ Oskari.clazz.define(
             }
             sandbox.request(
                 me.instance.getName(),
-                moveReqBuilder(result.lon, result.lat, zoom, false)
+                moveReqBuilder(result.lon, result.lat, zoom)
             );
 
             var loc = this.instance.getLocalization('resultBox'),

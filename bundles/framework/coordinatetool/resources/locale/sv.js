@@ -15,35 +15,43 @@ Oskari.registerLocalization(
                 "title": "Koordinater",
                 "searchButton": "Fokusera kartan",
                 "addMarkerButton": "Tillägg markör",
-                "info": "Klicka på en plats på kartan för att se dess koordinater eller mata in koordinaterna och klicka på knappen \"Fokusera kartan\"",
+                "info": "Mata in koordinaterna eller peka på platsen på kartan.",
                 "showMouseCoordinates": "Visa koordinaterna för musmarkörens position"
             },
             "compass": {
-                "lon": "E / lon:",
-                "lat": "N / lat:"
+                "lon": "Lon",
+                "lat": "Lat",
+                "n": "N",
+                "e": "E",
+                "p": "N",
+                "i": "E"
             },
             "reversegeocode": {
                 "errorTitle": "Geokodningsfel",
                 "error": "Geokodningen misslyckades. Geokoden kunde inte hämtas för den valda platsen",
                 "WHAT3WORDS_CHANNEL": {
-                    "label": "What3words: "
+                    "label": "what3words: "
                 },
-                "NLS_NEAREST_FEATURE_CHANNEL" : {
+                "NLS_NEAREST_FEATURE_CHANNEL": {
                     "label": "Adress: "
-                }
+                },
+                "TM35LEHTIJAKO_CHANNEL": {
+                    "label": "Kartblad: "
+                },
+                "moreInfo": "Visa mer information om positionen."
             },
-            "tooltip" : {
+            "tooltip": {
                 "tool": "Visa koordinaterna eller fokusera kartan till de valda koordinaterna",
                 "close": "Stäng"
             },
-             "checkValuesDialog": {
+            "checkValuesDialog": {
                 "button": "OK",
                 "title": "Fel",
                 "message": "Koordinaterna er felaktiga. Kontrollera koordinatvärdena och försök igen"
             },
             "projectionChange": {
                 "header": "Byt projektion",
-                "projection":"Projektion",
+                "projection": "Projektion",
                 "confirmationMessage": "Genom att byta projektion återgår applikationen till startläget och alla öppna kartlager stänges. Vill du fortsätta?",
                 "buttons": {
                     "ok": "OK",
@@ -78,9 +86,13 @@ Oskari.registerLocalization(
                     "EPSG:2391": "KKJ zon 1",
                     "EPSG:2392": "KKJ zon 2",
                     "EPSG:2394": "KKJ zon 4"
-                }
+                },
+                "emergencyCallLabel": "Koordinaterna som rekommenderas att användas i nödsamtal är",
+                "emergencyCallLabelAnd": "och",
+                "showCoordinateFormatDisplay": "Show coordinates &raquo;",
+                "showInputValues": "&laquo;Input values"
             },
-            "cannotTransformCoordinates" : {
+            "cannotTransformCoordinates": {
                 "title": "Fel",
                 "message": "Koordinaterna kunde inte omvandlas"
             },
@@ -90,5 +102,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});

@@ -43,6 +43,10 @@ Oskari.registerLocalization(
                 "tooltip": "Il layer non è disponibile.",
                 "iconClass": "backendstatus-down"
             },
+            "ERROR": {
+                "tooltip": "Il layer non è disponibile.",
+                "iconClass": "backendstatus-error"
+            },
             "MAINTENANCE": {
                 "tooltip": "Il layer potrebbe non essere disponibile nei prossimi giorni.",
                 "iconClass": "backendstatus-down"
@@ -61,10 +65,10 @@ Oskari.registerLocalization(
         },
         "types": {
             "syn": "Sinonimo",
-            "lk": "NOT TRANSLATED",
-            "vk": "NOT TRANSLATED",
-            "ak": "NOT TRANSLATED",
-            "yk": "NOT TRANSLATED"
+            "lk": "",
+            "vk": "",
+            "ak": "",
+            "yk": ""
         },
         "layerFilter": {
             "buttons": {
@@ -78,5 +82,4 @@ Oskari.registerLocalization(
             }
         }
     }
-}
-);
+});
